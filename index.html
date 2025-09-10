@@ -100,6 +100,33 @@
     const db = getFirestore(app);
 
     console.log("Firebase connected:", app);
+
+    import { collection, addDoc, getDocs } 
+  from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+
+// Test: Add a document
+try {
+  const docRef = await addDoc(collection(db, "testCollection"), {
+    item: "Test Wallet",
+    location: "Library",
+    timestamp: new Date()
+  });
+  console.log("Test document written with ID: ", docRef.id);
+} catch (e) {
+  console.error("Error adding document: ", e);
+}
+
+// Test: Read documents
+const querySnapshot = await getDocs(collection(db, "testCollection"));
+querySnapshot.forEach((doc) => {
+  console.log(`${doc.id} =>`, doc.data());
+});
+
+
+
+
+    
   </script>
+  
 </body>
 </html>
