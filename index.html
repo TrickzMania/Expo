@@ -83,52 +83,39 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 
   <!-- Firebase SDKs (modular style) -->
-  <script type="module">
-    // Import the functions you need
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-    import { getFirestore } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+ <!-- Firebase SDKs -->
+<script type="module">
+  // Import Firebase
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+  import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
-    // Your Firebase configuration
-    const firebaseConfig = {
-  apiKey: "AIzaSyD2iuNpJI0p1TSA_MdJ-9SNuE6QqeZJRt8",
-  authDomain: "lostandfound-f64d1.firebaseapp.com",
-  projectId: "lostandfound-f64d1",
-  storageBucket: "lostandfound-f64d1.appspot.com",  // ✅ fixed here
-  messagingSenderId: "226765931514",
-  appId: "1:226765931514:web:4b3ba5d6288e0273c05a43"
-};
+  // Your Firebase config
+  const firebaseConfig = {
+    apiKey: "YOUR-API-KEY",
+    authDomain: "lostandfound.firebaseapp.com",
+    projectId: "lostandfound",
+    storageBucket: "lostandfound.appspot.com",
+    messagingSenderId: "123456789",
+    appId: "1:123456789:web:abc123"
+  };
 
-    // Initialize Firebase
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
 
-    console.log("Firebase connected:", app);
+  // Example: Add a test item
+  async function addTestItem() {
+    await addDoc(collection(db, "items"), {
+      name: "Wallet",
+      location: "Library",
+      status: "Found"
+    });
+    console.log("Test item added!");
+  }
 
-
-    import { collection, addDoc, getDocs } 
-  from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
-
-// Test: Add a document
-try {
-  const docRef = await addDoc(collection(db, "testCollection"), {
-    item: "Test Wallet",
-    location: "Library",
-    timestamp: new Date()
-  });
-  console.log("Test document written with ID: ", docRef.id);
-} catch (e) {
-  console.error("Error adding document: ", e);
-}
-
-// Test: Read documents
-const querySnapshot = await getDocs(collection(db, "testCollection"));
-querySnapshot.forEach((doc) => {
-  console.log(`${doc.id} =>`, doc.data());
-});
-
-  </script>
-</body>
-</html>
+  addTestItem();
+</script>
 
 </body>
 </html>
+
