@@ -81,40 +81,27 @@
 
    <!-- Bootstrap JS (CDN) -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
-
-  <!-- Firebase SDKs (modular style) -->
- <!-- Firebase SDKs -->
 <script type="module">
-  // Import Firebase
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-  import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // For example: import { getFirestore } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+  // https://firebase.google.com/docs/web/setup#available-libraries
 
-  // Your Firebase config
+  // Your web app's Firebase configuration
   const firebaseConfig = {
-    apiKey: "YOUR-API-KEY",
-    authDomain: "lostandfound.firebaseapp.com",
-    projectId: "lostandfound",
-    storageBucket: "lostandfound.appspot.com",
-    messagingSenderId: "123456789",
-    appId: "1:123456789:web:abc123"
+    apiKey: "AIzaSyD2iuNpJI0p1TSA_MdJ-9SNuE6QqeZJRt8",
+    authDomain: "lostandfound-f64d1.firebaseapp.com",
+    projectId: "lostandfound-f64d1",
+    storageBucket: "lostandfound-f64d1.appspot.com",
+    messagingSenderId: "226765931514",
+    appId: "1:226765931514:web:4b3ba5d6288e0273c05a43"
   };
 
   // Initialize Firebase
   const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-
-  // Example: Add a test item
-  async function addTestItem() {
-    await addDoc(collection(db, "items"), {
-      name: "Wallet",
-      location: "Library",
-      status: "Found"
-    });
-    console.log("Test item added!");
-  }
-
-  addTestItem();
 </script>
+
 
 </body>
 </html>
