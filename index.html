@@ -76,16 +76,16 @@
     console.log("Firebase connected:", app);
 
     // --- TEST: Add a sample event (only once)
-    try {
-      const docRef = await addDoc(collection(db, "events"), {
-        title: "AI Workshop",
-        description: "Intro to AI basics",
-        date: new Date("2025-09-20T10:00:00"),
-        location: "Seminar Hall 1",
-        organizer: "CSE Dept.",
-        tags: ["workshop", "AI"],
-        createdAt: new Date()
-      });
+   // try {
+     // const docRef = await addDoc(collection(db, "events"), {
+        //title: "AI Workshop",
+       // description: "Intro to AI basics",
+       // date: new Date("2025-09-20T10:00:00"),
+      //  location: "Seminar Hall 1",
+       // organizer: "CSE Dept.",
+      //  tags: ["workshop", "AI"],
+      //  createdAt: new Date()
+    //  });
       console.log("Document written with ID:", docRef.id);
     } catch (e) {
       console.error("Error adding document:", e);
