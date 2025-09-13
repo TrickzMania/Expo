@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Smart Campus Lost & Found</title>
+  <title>Campus Event Tracker</title>
   
   <!-- Bootstrap CSS (CDN) -->
   <link 
@@ -16,15 +16,15 @@
   <!-- Navbar -->
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container-fluid">
-      <a class="navbar-brand" href="#">Lost & Found</a>
+      <a class="navbar-brand" href="#">Event Tracker</a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ms-auto">
           <li class="nav-item"><a class="nav-link" href="#">Home</a></li>
-          <li class="nav-item"><a class="nav-link" href="#">Report Item</a></li>
-          <li class="nav-item"><a class="nav-link" href="#">Found Items</a></li>
+          <li class="nav-item"><a class="nav-link" href="#">Add Event</a></li>
+          <li class="nav-item"><a class="nav-link" href="#">Search Event</a></li>
         </ul>
       </div>
     </div>
@@ -32,24 +32,24 @@
 
   <!-- Hero Section -->
   <div class="bg-light p-5 text-center">
-    <h1 class="display-4">Smart Campus Lost & Found</h1>
-    <p class="lead">Easily report and find lost items within your campus.</p>
-    <a href="#" class="btn btn-primary btn-lg">Report an Item</a>
-    <a href="#" class="btn btn-outline-dark btn-lg">View Found Items</a>
+    <h1 class="display-4">Smart Campus Event Tracker</h1>
+    <p class="lead">Add and keep track of Campus Events.</p>
+    <a href="#" class="btn btn-primary btn-lg">Add an Event</a>
+    <a href="#" class="btn btn-outline-dark btn-lg">View Events</a>
   </div>
 
   <!-- Cards Section -->
   <div class="container my-5">
-    <h2 class="mb-4">Recently Found Items</h2>
+    <h2 class="mb-4">Events</h2>
     <div class="row">
       <!-- Card Example -->
       <div class="col-md-4">
         <div class="card shadow-sm">
           <img src="https://via.placeholder.com/300x200" class="card-img-top" alt="Lost Item">
           <div class="card-body">
-            <h5 class="card-title">Lost Wallet</h5>
-            <p class="card-text">Black leather wallet found near Library.</p>
-            <a href="#" class="btn btn-sm btn-primary">Claim</a>
+            <h5 class="card-title">Smart HAckathon</h5>
+            <p class="card-text">Python Hackathon for beginners.</p>
+            <a href="#" class="btn btn-sm btn-primary">View</a>
           </div>
         </div>
       </div>
@@ -59,9 +59,9 @@
         <div class="card shadow-sm">
           <img src="https://via.placeholder.com/300x200" class="card-img-top" alt="Lost Item">
           <div class="card-body">
-            <h5 class="card-title">ID Card</h5>
-            <p class="card-text">Student ID card found near Cafeteria.</p>
-            <a href="#" class="btn btn-sm btn-primary">Claim</a>
+            <h5 class="card-title">Project Expo</h5>
+            <p class="card-text">Expo for S3-S5 students.</p>
+            <a href="#" class="btn btn-sm btn-primary">View</a>
           </div>
         </div>
       </div>
@@ -71,7 +71,7 @@
 
   <!-- Footer -->
   <footer class="bg-dark text-white text-center p-3">
-    <p class="mb-0">&copy; 2025 Smart Campus Lost & Found</p>
+    <p class="mb-0">&copy;2025 Smart Campus Event Tracker</p>
   </footer>
 
   <!-- Bootstrap JS (CDN) -->
@@ -106,20 +106,22 @@
 
 // Test: Add a document
 try {
-  const docRef = await addDoc(collection(db, "testCollection"), {
-    item: "Test Wallet",
-    location: "Library",
-    timestamp: new Date()
-  });
-  console.log("Test document written with ID: ", docRef.id);
-} catch (e) {
-  console.error("Error adding document: ", e);
-}
+ const docRef = await addDoc(collection(db, "events"), {
+  title: "AI Workshop",
+  description: "Intro to AI basics",
+  date: new Date("2025-09-20T10:00:00"),   // event date & time
+  location: "Seminar Hall 1",
+  organizer: "CSE Dept.",
+  tags: ["workshop", "AI"],
+  createdAt: new Date()   // when posted
+});
+
 
 // Test: Read documents
-const querySnapshot = await getDocs(collection(db, "testCollection"));
+const querySnapshot = await getDocs(collection(db, "events"));
 querySnapshot.forEach((doc) => {
-  console.log(`${doc.id} =>`, doc.data());
+  const data = doc.data();
+  console.log(`${doc.id} => ${data.title} at ${data.location} on ${data.date}`);
 });
 
 
