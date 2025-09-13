@@ -4,14 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Campus Event Tracker</title>
-  
-  <!-- Bootstrap CSS -->
-  <link 
-    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" 
-    rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-  
+
   <!-- Navbar -->
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container-fluid">
@@ -33,15 +29,38 @@
   <div class="bg-light p-5 text-center">
     <h1 class="display-4">Smart Campus Event Tracker</h1>
     <p class="lead">Add and keep track of Campus Events.</p>
-    <a href="#" class="btn btn-primary btn-lg">Add an Event</a>
-    <a href="#" class="btn btn-outline-dark btn-lg">View Events</a>
+  </div>
+
+  <!-- Add Event Form -->
+  <div class="container my-4">
+    <h2>Add New Event</h2>
+    <form id="addEventForm" class="row g-3">
+      <div class="col-md-6">
+        <input type="text" id="title" class="form-control" placeholder="Event Title" required>
+      </div>
+      <div class="col-md-6">
+        <input type="text" id="location" class="form-control" placeholder="Location" required>
+      </div>
+      <div class="col-md-6">
+        <input type="datetime-local" id="date" class="form-control" required>
+      </div>
+      <div class="col-md-6">
+        <input type="text" id="organizer" class="form-control" placeholder="Organizer">
+      </div>
+      <div class="col-12">
+        <textarea id="description" class="form-control" placeholder="Description"></textarea>
+      </div>
+      <div class="col-12">
+        <button type="submit" class="btn btn-primary">Add Event</button>
+      </div>
+    </form>
   </div>
 
   <!-- Events Section -->
   <div class="container my-5">
     <h2 class="mb-4">Upcoming Events</h2>
     <div class="row" id="eventsContainer">
-      <!-- Event cards will load here from Firestore -->
+      <!-- Event cards will load here -->
     </div>
   </div>
 
@@ -53,13 +72,12 @@
   <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 
-  <!-- Firebase SDKs -->
+  <!-- Firebase SDK -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
     import { getFirestore, collection, addDoc, getDocs } 
       from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
-    // Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyD2iuNpJI0p1TSA_MdJ-9SNuE6QqeZJRt8",
       authDomain: "lostandfound-f64d1.firebaseapp.com",
@@ -69,52 +87,54 @@
       appId: "1:226765931514:web:4b3ba5d6288e0273c05a43"
     };
 
-    // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
     console.log("Firebase connected:", app);
 
-    // --- TEST: Add a sample event (only once)
-   // try {
-     // const docRef = await addDoc(collection(db, "events"), {
-        //title: "AI Workshop",
-       // description: "Intro to AI basics",
-       // date: new Date("2025-09-20T10:00:00"),
-      //  location: "Seminar Hall 1",
-       // organizer: "CSE Dept.",
-      //  tags: ["workshop", "AI"],
-      //  createdAt: new Date()
-    //  });
-      console.log("Document written with ID:", docRef.id);
-     catch (e) {
-      console.error("Error adding document:", e);
-    }
-
-    // --- Fetch events and display them
-    const querySnapshot = await getDocs(collection(db, "events"));
     const eventsContainer = document.getElementById("eventsContainer");
 
-    querySnapshot.forEach((doc) => {
-      const data = doc.data();
-      const card = `
-        <div class="col-md-4 mb-4">
-          <div class="card shadow-sm">
-            <img src="https://picsum.photos/300/200" class="card-img-top" alt="Event">
-            <div class="card-body">
-              <h5 class="card-title">${data.title}</h5>
-              <p class="card-text">${data.description}</p>
-              <p><strong>📍 ${data.location}</strong></p>
-              <p><strong>🗓 ${data.date.toDate().toLocaleString()}</strong></p>
-              <p><em>Organized by ${data.organizer}</em></p>
-              <a href="#" class="btn btn-sm btn-primary">View</a>
+    // Function to load all events
+    async function loadEvents() {
+      eventsContainer.innerHTML = ""; // clear previous
+      const querySnapshot = await getDocs(collection(db, "events"));
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        const card = `
+          <div class="col-md-4 mb-4">
+            <div class="card shadow-sm">
+              <img src="https://picsum.photos/300/200" class="card-img-top" alt="Event">
+              <div class="card-body">
+                <h5 class="card-title">${data.title}</h5>
+                <p class="card-text">${data.description || ""}</p>
+                <p><strong>📍 ${data.location}</strong></p>
+                <p><strong>🗓 ${data.date.toDate().toLocaleString()}</strong></p>
+                <p><em>Organized by ${data.organizer || "N/A"}</em></p>
+              </div>
             </div>
           </div>
-        </div>
-      `;
-      eventsContainer.innerHTML += card;
+        `;
+        eventsContainer.innerHTML += card;
+      });
+    }
+
+    loadEvents(); // load on page load
+
+    // Handle form submission
+    document.getElementById("addEventForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      await addDoc(collection(db, "events"), {
+        title: document.getElementById("title").value,
+        location: document.getElementById("location").value,
+        description: document.getElementById("description").value,
+        organizer: document.getElementById("organizer").value,
+        date: new Date(document.getElementById("date").value),
+        createdAt: new Date()
+      });
+      alert("Event added!");
+      e.target.reset();
+      loadEvents(); // reload events to show new one
     });
   </script>
 </body>
 </html>
-
