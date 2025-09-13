@@ -19,7 +19,6 @@
         <ul class="navbar-nav ms-auto">
           <li class="nav-item"><a class="nav-link" href="#">Home</a></li>
           <li class="nav-item"><a class="nav-link" href="#">Add Event</a></li>
-          <li class="nav-item"><a class="nav-link" href="#">Search Event</a></li>
         </ul>
       </div>
     </div>
@@ -90,8 +89,6 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    console.log("Firebase connected:", app);
-
     const eventsContainer = document.getElementById("eventsContainer");
 
     // Function to load all events
@@ -118,7 +115,7 @@
       });
     }
 
-    loadEvents(); // load on page load
+    loadEvents(); // load events on page load
 
     // Handle form submission
     document.getElementById("addEventForm").addEventListener("submit", async (e) => {
@@ -131,9 +128,8 @@
         date: new Date(document.getElementById("date").value),
         createdAt: new Date()
       });
-      alert("Event added!");
       e.target.reset();
-      loadEvents(); // reload events to show new one
+      loadEvents(); // reload events to show the new one
     });
   </script>
 </body>
