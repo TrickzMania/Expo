@@ -1,1 +1,54 @@
+/* style.css */
+
+/* Body background */
+body {
+  background: #7b13d1; /* fallback color */
+  background: linear-gradient(
+    90deg,
+    rgba(123, 19, 209, 1) 0%,
+    rgba(0, 0, 0, 1) 54%,
+    rgba(0, 212, 255, 1) 100%
+  );
+  font-family: 'Arial', sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+/* Hero Section */
+.hero-section {
+  color: white;
+  text-align: center;
+  padding: 80px 20px;
+}
+
+/* Buttons */
+.btn-primary {
+  transition: 0.3s;
+  background-color: #7b13d1;
+  border: none;
+}
+.btn-primary:hover {
+  opacity: 0.85;
+}
+
+/* Event Cards */
+.card {
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  min-height: 450px;
+}
+
+/* Footer */
+footer {
+  background-color: rgba(0,0,0,0.8);
+  color: white;
+  padding: 20px 0;
+  text-align: center;
+}
+
+/* Badge styling for event status */
+.badge {
+  font-size: 0.9rem;
+  margin-top: 5px;
+}
 
