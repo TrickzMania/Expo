@@ -12,6 +12,9 @@
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container-fluid">
       <a class="navbar-brand" href="index.html">Event Tracker</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
     </div>
   </nav>
 
@@ -57,10 +60,8 @@
   <!-- Firebase SDK -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-    import { getFirestore, collection, addDoc } 
-      from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
-    import { getStorage, ref, uploadBytes, getDownloadURL } 
-      from "https://www.gstatic.com/firebasejs/12.2.1/firebase-storage.js";
+    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+    import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-storage.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyD2iuNpJI0p1TSA_MdJ-9SNuE6QqeZJRt8",
@@ -87,13 +88,38 @@
       const duration = parseInt(document.getElementById("duration").value, 10);
       const posterFile = document.getElementById("poster").files[0];
 
+      if (!posterFile) {
+        alert("Please select a poster image!");
+        return;
+      }
+
       try {
-        // Upload image to Firebase Storage
-        const storageRef = ref(storage, "event_posters/" + Date.now() + "_" + posterFile.name);
+        // Upload poster to Firebase Storage
+        const storageRef = ref(storage, `event_posters/${Date.now()}_${posterFile.name}`);
         await uploadBytes(storageRef, posterFile);
         const imageUrl = await getDownloadURL(storageRef);
 
         // Save event in Firestore
         await addDoc(collection(db, "events"), {
           title,
+          location,
+          description,
+          organizer,
+          date,
+          duration,
+          imageUrl,
+          createdAt: new Date()
+        });
 
+        alert("✅ Event added successfully!");
+        // Redirect to index.html
+        window.location.href = "index.html";
+
+      } catch (error) {
+        console.error("Error adding event:", error);
+        alert("❌ Failed to add event. Check console for details.");
+      }
+    });
+  </script>
+</body>
+</html>
