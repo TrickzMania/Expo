@@ -46,6 +46,12 @@
       <div class="col-md-6">
         <input type="text" id="organizer" class="form-control" placeholder="Organizer">
       </div>
+
+      <!-- 🔹 NEW Duration Field -->
+      <div class="col-md-6">
+        <input type="number" id="duration" class="form-control" placeholder="Duration (minutes)" required>
+      </div>
+
       <div class="col-12">
         <textarea id="description" class="form-control" placeholder="Description"></textarea>
       </div>
@@ -72,90 +78,92 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 
   <!-- Firebase SDK -->
- <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-  import { getFirestore, collection, addDoc, getDocs } 
-    from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, getDocs } 
+      from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyD2iuNpJI0p1TSA_MdJ-9SNuE6QqeZJRt8",
-    authDomain: "lostandfound-f64d1.firebaseapp.com",
-    projectId: "lostandfound-f64d1",
-    storageBucket: "lostandfound-f64d1.appspot.com",
-    messagingSenderId: "226765931514",
-    appId: "1:226765931514:web:4b3ba5d6288e0273c05a43"
-  };
+    const firebaseConfig = {
+      apiKey: "AIzaSyD2iuNpJI0p1TSA_MdJ-9SNuE6QqeZJRt8",
+      authDomain: "lostandfound-f64d1.firebaseapp.com",
+      projectId: "lostandfound-f64d1",
+      storageBucket: "lostandfound-f64d1.appspot.com",
+      messagingSenderId: "226765931514",
+      appId: "1:226765931514:web:4b3ba5d6288e0273c05a43"
+    };
 
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
-  const eventsContainer = document.getElementById("eventsContainer");
+    const eventsContainer = document.getElementById("eventsContainer");
 
-  // Function to calculate event status
-  function getEventStatus(eventDate) {
-    const now = new Date();
-    const start = new Date(eventDate);           // event start
-    const end = new Date(eventDate.getTime() + 60 * 60 * 1000); // assume 1 hour duration
+    // 🔹 Function to calculate event status
+    function getEventStatus(eventDate, duration) {
+      const now = new Date();
+      const start = new Date(eventDate);
+      const end = new Date(eventDate.getTime() + duration * 60 * 1000);
 
-    if (now < start) {
-      const diff = Math.floor((start - now) / 60000); // in minutes
-      return diff <= 60 ? `⏳ Starts in ${diff} min` : "📌 Upcoming";
-    } else if (now >= start && now <= end) {
-      const remaining = Math.floor((end - now) / 60000);
-      return `🔴 Live Now (ends in ${remaining} min)`;
-    } else {
-      return "✅ Event Ended";
+      if (now < start) {
+        const diff = Math.floor((start - now) / 60000);
+        return diff <= 60 ? `⏳ Starts in ${diff} min` : "📌 Upcoming";
+      } else if (now >= start && now <= end) {
+        const remaining = Math.floor((end - now) / 60000);
+        return `🔴 Live Now (ends in ${remaining} min)`;
+      } else {
+        return "✅ Event Ended";
+      }
     }
-  }
 
-  // Function to load all events
-  async function loadEvents() {
-    eventsContainer.innerHTML = ""; // clear previous
-    const querySnapshot = await getDocs(collection(db, "events"));
+    // 🔹 Load events from Firestore
+    async function loadEvents() {
+      eventsContainer.innerHTML = ""; 
+      const querySnapshot = await getDocs(collection(db, "events"));
 
-    querySnapshot.forEach((doc) => {
-      const data = doc.data();
-      const eventDate = data.date.toDate(); // Firestore Timestamp → JS Date
-      const status = getEventStatus(eventDate);
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        const eventDate = data.date.toDate();
+        const duration = data.duration || 60; // fallback to 60 if missing
+        const status = getEventStatus(eventDate, duration);
 
-      const card = `
-        <div class="col-md-4 mb-4">
-          <div class="card shadow-sm">
-            <img src="https://picsum.photos/300/200" class="card-img-top" alt="Event">
-            <div class="card-body">
-              <h5 class="card-title">${data.title}</h5>
-              <p class="card-text">${data.description || ""}</p>
-              <p><strong>📍 ${data.location}</strong></p>
-              <p><strong>🗓 ${eventDate.toLocaleString()}</strong></p>
-              <p><em>Organized by ${data.organizer || "N/A"}</em></p>
-              <p class="fw-bold text-primary">${status}</p>
+        const card = `
+          <div class="col-md-4 mb-4">
+            <div class="card shadow-sm">
+              <img src="https://picsum.photos/300/200" class="card-img-top" alt="Event">
+              <div class="card-body">
+                <h5 class="card-title">${data.title}</h5>
+                <p class="card-text">${data.description || ""}</p>
+                <p><strong>📍 ${data.location}</strong></p>
+                <p><strong>🗓 ${eventDate.toLocaleString()}</strong></p>
+                <p><strong>⏱ Duration:</strong> ${duration} min</p>
+                <p><em>Organized by ${data.organizer || "N/A"}</em></p>
+                <p class="fw-bold text-primary">${status}</p>
+              </div>
             </div>
           </div>
-        </div>
-      `;
-      eventsContainer.innerHTML += card;
+        `;
+        eventsContainer.innerHTML += card;
+      });
+    }
+
+    // Refresh every 30s
+    loadEvents();
+    setInterval(loadEvents, 30000);
+
+    // 🔹 Handle form submission
+    document.getElementById("addEventForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      await addDoc(collection(db, "events"), {
+        title: document.getElementById("title").value,
+        location: document.getElementById("location").value,
+        description: document.getElementById("description").value,
+        organizer: document.getElementById("organizer").value,
+        date: new Date(document.getElementById("date").value),
+        duration: parseInt(document.getElementById("duration").value), // NEW
+        createdAt: new Date()
+      });
+      e.target.reset();
+      loadEvents(); 
     });
-  }
-
-  // Refresh events every 30 seconds so status updates automatically
-  loadEvents();
-  setInterval(loadEvents, 30000);
-
-  // Handle form submission
-  document.getElementById("addEventForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
-    await addDoc(collection(db, "events"), {
-      title: document.getElementById("title").value,
-      location: document.getElementById("location").value,
-      description: document.getElementById("description").value,
-      organizer: document.getElementById("organizer").value,
-      date: new Date(document.getElementById("date").value),
-      createdAt: new Date()
-    });
-    e.target.reset();
-    loadEvents(); // reload events to show the new one
-  });
-</script>
-
+  </script>
 </body>
 </html>
