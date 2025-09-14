@@ -80,4 +80,16 @@
                 <p><strong>📍 ${data.location}</strong></p>
                 <p><strong>🗓 ${startDate.toLocaleString()}</strong> - 
                    <strong>⏰ ${endDate.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}</strong></p>
-                <p><em>Organized by ${data.organizer || "N/A"}</em></
+                <p><em>Organized by ${data.organizer || "N/A"}</em></p>
+              </div>
+            </div>
+          </div>
+        `;
+        eventsContainer.innerHTML += card;
+      });
+    }
+
+    loadEvents();
+  </script>
+</body>
+</html>
