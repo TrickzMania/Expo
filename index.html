@@ -42,54 +42,73 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 
   <!-- Firebase SDK -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-    import { getFirestore, collection, getDocs } 
-      from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+ <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+  import { getFirestore, collection, getDocs } 
+    from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyD2iuNpJI0p1TSA_MdJ-9SNuE6QqeZJRt8",
-      authDomain: "lostandfound-f64d1.firebaseapp.com",
-      projectId: "lostandfound-f64d1",
-      storageBucket: "lostandfound-f64d1.appspot.com",
-      messagingSenderId: "226765931514",
-      appId: "1:226765931514:web:4b3ba5d6288e0273c05a43"
-    };
+  const firebaseConfig = {
+    apiKey: "AIzaSyD2iuNpJI0p1TSA_MdJ-9SNuE6QqeZJRt8",
+    authDomain: "lostandfound-f64d1.firebaseapp.com",
+    projectId: "lostandfound-f64d1",
+    storageBucket: "lostandfound-f64d1.appspot.com",
+    messagingSenderId: "226765931514",
+    appId: "1:226765931514:web:4b3ba5d6288e0273c05a43"
+  };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
 
-    const eventsContainer = document.getElementById("eventsContainer");
+  const eventsContainer = document.getElementById("eventsContainer");
 
-    // Load events
-    async function loadEvents() {
-      eventsContainer.innerHTML = "";
-      const querySnapshot = await getDocs(collection(db, "events"));
-      querySnapshot.forEach((doc) => {
-        const data = doc.data();
-        const startDate = data.date.toDate ? data.date.toDate() : new Date(data.date);
-        const endDate = new Date(startDate.getTime() + (data.duration || 60) * 60000);
+  // Load and sort events
+  async function loadEvents() {
+    eventsContainer.innerHTML = "";
+    const querySnapshot = await getDocs(collection(db, "events"));
 
-        const card = `
-          <div class="col-md-4 mb-4">
-            <div class="card shadow-sm">
-              <img src="https://picsum.photos/300/200" class="card-img-top" alt="Event">
-              <div class="card-body">
-                <h5 class="card-title">${data.title}</h5>
-                <p class="card-text">${data.description || ""}</p>
-                <p><strong>📍 ${data.location}</strong></p>
-                <p><strong>🗓 ${startDate.toLocaleString()}</strong> - 
-                   <strong>⏰ ${endDate.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}</strong></p>
-                <p><em>Organized by ${data.organizer || "N/A"}</em></p>
-              </div>
+    let events = [];
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      const startDate = data.date.toDate ? data.date.toDate() : new Date(data.date);
+      const endDate = new Date(startDate.getTime() + (data.duration || 60) * 60000);
+
+      events.push({
+        id: doc.id,
+        ...data,
+        startDate,
+        endDate
+      });
+    });
+
+    // 🔹 Sort by start date (soonest first)
+    events.sort((a, b) => a.startDate - b.startDate);
+
+    // 🔹 (Optional) Filter out past events
+    const now = new Date();
+    events = events.filter(event => event.endDate >= now);
+
+    // Render events
+    events.forEach((event) => {
+      const card = `
+        <div class="col-md-4 mb-4">
+          <div class="card shadow-sm">
+            <img src="https://picsum.photos/300/200" class="card-img-top" alt="Event">
+            <div class="card-body">
+              <h5 class="card-title">${event.title}</h5>
+              <p class="card-text">${event.description || ""}</p>
+              <p><strong>📍 ${event.location}</strong></p>
+              <p><strong>🗓 ${event.startDate.toLocaleString()}</strong> - 
+                 <strong>⏰ ${event.endDate.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}</strong></p>
+              <p><em>Organized by ${event.organizer || "N/A"}</em></p>
             </div>
           </div>
-        `;
-        eventsContainer.innerHTML += card;
-      });
-    }
+        </div>
+      `;
+      eventsContainer.innerHTML += card;
+    });
+  }
 
-    loadEvents();
-  </script>
+  loadEvents();
+</script>
 </body>
 </html>
