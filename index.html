@@ -12,14 +12,6 @@
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container-fluid">
       <a class="navbar-brand" href="#">Event Tracker</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav ms-auto">
-          <li class="nav-item"><a class="nav-link" href="#">Home</a></li>
-        </ul>
-      </div>
     </div>
   </nav>
 
@@ -34,47 +26,10 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
       <h2>Upcoming Events</h2>
       <!-- 🔹 Add Event Button -->
-      <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addEventModal">
-        ➕ Add Event
-      </button>
+      <a href="add.html" class="btn btn-primary">➕ Add Event</a>
     </div>
-    <div id="successAlert" class="alert alert-success d-none">✅ Event added successfully!</div>
     <div class="row" id="eventsContainer">
       <!-- Event cards will load here -->
-    </div>
-  </div>
-
-  <!-- 🔹 Add Event Modal -->
-  <div class="modal fade" id="addEventModal" tabindex="-1" aria-labelledby="addEventModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-      <div class="modal-content">
-        <form id="addEventForm" class="row g-3 p-4">
-          <h4 id="addEventModalLabel" class="mb-3">Add New Event</h4>
-          
-          <div class="col-md-6">
-            <input type="text" id="title" class="form-control" placeholder="Event Title" required>
-          </div>
-          <div class="col-md-6">
-            <input type="text" id="location" class="form-control" placeholder="Location" required>
-          </div>
-          <div class="col-md-6">
-            <input type="datetime-local" id="date" class="form-control" required>
-          </div>
-          <div class="col-md-6">
-            <input type="text" id="organizer" class="form-control" placeholder="Organizer">
-          </div>
-          <div class="col-md-6">
-            <input type="number" id="duration" class="form-control" placeholder="Duration (minutes)" required>
-          </div>
-          <div class="col-12">
-            <textarea id="description" class="form-control" placeholder="Description"></textarea>
-          </div>
-          <div class="col-12 d-flex justify-content-end">
-            <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Cancel</button>
-            <button type="submit" class="btn btn-primary">Save Event</button>
-          </div>
-        </form>
-      </div>
     </div>
   </div>
 
@@ -89,5 +44,40 @@
   <!-- Firebase SDK -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs } 
-      from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.j
+    import { getFirestore, collection, getDocs } 
+      from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyD2iuNpJI0p1TSA_MdJ-9SNuE6QqeZJRt8",
+      authDomain: "lostandfound-f64d1.firebaseapp.com",
+      projectId: "lostandfound-f64d1",
+      storageBucket: "lostandfound-f64d1.appspot.com",
+      messagingSenderId: "226765931514",
+      appId: "1:226765931514:web:4b3ba5d6288e0273c05a43"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const eventsContainer = document.getElementById("eventsContainer");
+
+    // Load events
+    async function loadEvents() {
+      eventsContainer.innerHTML = "";
+      const querySnapshot = await getDocs(collection(db, "events"));
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        const startDate = data.date.toDate ? data.date.toDate() : new Date(data.date);
+        const endDate = new Date(startDate.getTime() + (data.duration || 60) * 60000);
+
+        const card = `
+          <div class="col-md-4 mb-4">
+            <div class="card shadow-sm">
+              <img src="https://picsum.photos/300/200" class="card-img-top" alt="Event">
+              <div class="card-body">
+                <h5 class="card-title">${data.title}</h5>
+                <p class="card-text">${data.description || ""}</p>
+                <p><strong>📍 ${data.location}</strong></p>
+                <p><strong>🗓 ${startDate.toLocaleString()}</strong> - 
+                   <strong>⏰ ${endDate.toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'})}</strong></p>
+                <p><em>Organized by ${data.organizer || "N/A"}</em></
