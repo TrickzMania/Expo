@@ -1,51 +1,117 @@
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-  import { getFirestore, collection, addDoc, Timestamp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
-  import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-storage.js";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Add New Event</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
 
-  const firebaseConfig = { /* your config */ };
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-  const storage = getStorage(app);
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="index.html">Event Tracker</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+    </div>
+  </nav>
 
-  document.getElementById("addEventForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
+  <!-- Add Event Form -->
+  <div class="container my-5">
+    <h2 class="mb-4">Add New Event</h2>
+    <form id="addEventForm" class="row g-3">
+      <div class="col-md-6">
+        <input type="text" id="title" class="form-control" placeholder="Event Title" required>
+      </div>
+      <div class="col-md-6">
+        <input type="text" id="location" class="form-control" placeholder="Location" required>
+      </div>
+      <div class="col-md-6">
+        <input type="datetime-local" id="date" class="form-control" required>
+      </div>
+      <div class="col-md-6">
+        <input type="number" id="duration" class="form-control" placeholder="Duration (minutes)" required>
+      </div>
+      <div class="col-md-6">
+        <input type="text" id="organizer" class="form-control" placeholder="Organizer">
+      </div>
+      <div class="col-md-6">
+        <!-- Instead of file upload, type the filename -->
+        <input type="text" id="posterFile" class="form-control" placeholder="Poster file name (e.g. freshers.jpg)" required>
+        <small class="text-muted">Upload the image into <code>/assets/event_posters/</code> first.</small>
+      </div>
+      <div class="col-12">
+        <textarea id="description" class="form-control" placeholder="Description"></textarea>
+      </div>
+      <div class="col-12">
+        <button type="submit" class="btn btn-primary">Add Event</button>
+      </div>
+    </form>
+  </div>
 
-    const title = document.getElementById("title").value;
-    const location = document.getElementById("location").value;
-    const description = document.getElementById("description").value;
-    const organizer = document.getElementById("organizer").value;
-    const date = Timestamp.fromDate(new Date(document.getElementById("date").value)); // ✅ FIX
-    const duration = parseInt(document.getElementById("duration").value, 10);
-    const posterFile = document.getElementById("poster").files[0];
+  <!-- Footer -->
+  <footer class="bg-dark text-white text-center p-3">
+    <p class="mb-0">&copy; 2025 Smart Campus Event Tracker</p>
+  </footer>
 
-    if (!posterFile) {
-      alert("Please select a poster image!");
-      return;
-    }
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 
-    try {
-      const storageRef = ref(storage, `event_posters/${Date.now()}_${posterFile.name}`);
-      await uploadBytes(storageRef, posterFile);
-      const imageUrl = await getDownloadURL(storageRef);
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
-      await addDoc(collection(db, "events"), {
-        title,
-        location,
-        description,
-        organizer,
-        date,        // ✅ saved as Firestore Timestamp
-        duration,
-        imageUrl,
-        createdAt: Timestamp.now()
-      });
+    const firebaseConfig = {
+      apiKey: "AIzaSyD2iuNpJI0p1TSA_MdJ-9SNuE6QqeZJRt8",
+      authDomain: "lostandfound-f64d1.firebaseapp.com",
+      projectId: "lostandfound-f64d1",
+      storageBucket: "lostandfound-f64d1.appspot.com",
+      messagingSenderId: "226765931514",
+      appId: "1:226765931514:web:4b3ba5d6288e0273c05a43"
+    };
 
-      alert("✅ Event added successfully!");
-      window.location.href = "index.html";
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
-    } catch (error) {
-      console.error("Error adding event:", error);
-      alert("❌ Failed to add event. Check console for details.");
-    }
-  });
-</script>
+    // Handle form submission
+    document.getElementById("addEventForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const title = document.getElementById("title").value;
+      const location = document.getElementById("location").value;
+      const description = document.getElementById("description").value;
+      const organizer = document.getElementById("organizer").value;
+      const date = new Date(document.getElementById("date").value);
+      const duration = parseInt(document.getElementById("duration").value, 10);
+      const posterFile = document.getElementById("posterFile").value.trim();
+
+      // Build GitHub Pages image URL
+      const imageUrl = `assets/event_posters/${posterFile}`;
+
+      try {
+        // Save event in Firestore
+        await addDoc(collection(db, "events"), {
+          title,
+          location,
+          description,
+          organizer,
+          date,
+          duration,
+          imageUrl,
+          createdAt: new Date()
+        });
+
+        alert("✅ Event added successfully!");
+        window.location.href = "index.html";
+
+      } catch (error) {
+        console.error("Error adding event:", error);
+        alert("❌ Failed to add event. Check console for details.");
+      }
+    });
+  </script>
+</body>
+</html>
