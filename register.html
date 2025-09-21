@@ -5,45 +5,81 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Register for Event</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f0f2f5;
+    }
+    .register-card {
+      background: #fff;
+      padding: 40px;
+      border-radius: 15px;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 600px;
+    }
+    .register-card h2 {
+      margin-bottom: 30px;
+      text-align: center;
+    }
+    .form-control, .form-select {
+      height: 50px;
+      margin-bottom: 20px;
+    }
+    .btn-primary {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+    }
+    .event-link {
+      margin-top: 20px;
+      text-align: center;
+    }
+    .event-link a {
+      text-decoration: none;
+      font-weight: bold;
+    }
+  </style>
 </head>
-<body class="bg-light">
+<body>
 
-  <div class="container my-5">
-    <h2 id="eventTitle" class="mb-4">Register</h2>
-    <form id="registerForm" class="row g-3">
-      <div class="col-md-6">
-        <input type="text" id="studentName" class="form-control" placeholder="Your Name" required>
-      </div>
-      <div class="col-md-6">
-        <input type="email" id="studentEmail" class="form-control" placeholder="Your Email" required>
-      </div>
-      <div class="col-md-6">
-        <input type="tel" id="studentPhone" class="form-control" placeholder="Phone Number" required>
-      </div>
-      <div class="col-md-6">
-        <input type="text" id="studentDept" class="form-control" placeholder="Department" required>
-      </div>
-      <div class="col-md-6">
-        <select id="studentSemester" class="form-select" required>
-          <option value="" disabled selected>Select Semester</option>
-          <option value="1">1</option>
-          <option value="2">2</option>
-          <option value="3">3</option>
-          <option value="4">4</option>
-          <option value="5">5</option>
-          <option value="6">6</option>
-          <option value="7">7</option>
-        </select>
-      </div>
-
-      <!-- Event Link -->
-      <div class="mb-3 col-12" id="eventLinkContainer" style="display:none;">
-        <label class="form-label">Event Link</label><br>
-        <a href="#" id="eventLink" target="_blank" class="btn btn-outline-primary">🔗 Open Event Link</a>
+  <div class="register-card">
+    <h2 id="eventTitle">Register</h2>
+    <form id="registerForm">
+      <div class="row">
+        <div class="col-md-6">
+          <input type="text" id="studentName" class="form-control" placeholder="Your Name" required>
+        </div>
+        <div class="col-md-6">
+          <input type="email" id="studentEmail" class="form-control" placeholder="Your Email" required>
+        </div>
+        <div class="col-md-6">
+          <input type="tel" id="studentPhone" class="form-control" placeholder="Phone Number" required>
+        </div>
+        <div class="col-md-6">
+          <input type="text" id="studentDept" class="form-control" placeholder="Department" required>
+        </div>
+        <div class="col-md-6">
+          <select id="studentSemester" class="form-select" required>
+            <option value="" disabled selected>Select Semester</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+          </select>
+        </div>
       </div>
 
-      <div class="col-12">
-        <button type="submit" class="btn btn-primary">Submit Registration</button>
+      <button type="submit" class="btn btn-primary">Submit Registration</button>
+
+      <div class="event-link" id="eventLinkContainer" style="display:none;">
+        <p>Check event details: <a href="#" id="eventLink" target="_blank" class="btn btn-outline-primary">🔗 Open Event Link</a></p>
       </div>
     </form>
   </div>
@@ -72,14 +108,11 @@
 
     document.getElementById("eventTitle").innerText = `Register for: ${eventTitle}`;
 
-    // Show event link if available
     if(eventLink){
-      const linkContainer = document.getElementById("eventLinkContainer");
-      linkContainer.style.display = "block";
+      document.getElementById("eventLinkContainer").style.display = "block";
       document.getElementById("eventLink").href = eventLink;
     }
 
-    // Handle form submission
     document.getElementById("registerForm").addEventListener("submit", async (e) => {
       e.preventDefault();
 
@@ -100,7 +133,6 @@
           studentSemester,
           registeredAt: new Date()
         });
-
         alert("Registration successful!");
         window.location.href = "index.html";
       } catch (err) {
