@@ -12,16 +12,35 @@
     <h2 id="eventTitle" class="mb-4">Register</h2>
     <form id="registerForm" class="row g-3">
       <div class="col-md-6">
-        <input type="text" id="Name" class="form-control" placeholder="Your Name" required>
+        <input type="text" id="studentName" class="form-control" placeholder="Your Name" required>
       </div>
       <div class="col-md-6">
-        <input type="email" id="Email" class="form-control" placeholder="Your Email" required>
+        <input type="email" id="studentEmail" class="form-control" placeholder="Your Email" required>
       </div>
+      <div class="col-md-6">
+        <input type="tel" id="studentPhone" class="form-control" placeholder="Phone Number" required>
+      </div>
+      <div class="col-md-6">
+        <input type="text" id="studentDept" class="form-control" placeholder="Department" required>
+      </div>
+      <div class="col-md-6">
+        <select id="studentSemester" class="form-select" required>
+          <option value="" disabled selected>Select Semester</option>
+          <option value="1">1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+          <option value="7">7</option>
+        </select>
+      </div>
+
       <!-- Event Link -->
-      <div class="mb-3" id="eventLinkContainer" style="display:none;">
+      <div class="mb-3 col-12" id="eventLinkContainer" style="display:none;">
         <label class="form-label">Event Link</label><br>
         <a href="#" id="eventLink" target="_blank" class="btn btn-outline-primary">🔗 Open Event Link</a>
-     </div>
+      </div>
 
       <div class="col-12">
         <button type="submit" class="btn btn-primary">Submit Registration</button>
@@ -49,7 +68,16 @@
     const params = new URLSearchParams(window.location.search);
     const eventId = params.get("eventId");
     const eventTitle = params.get("title");
+    const eventLink = params.get("link");
+
     document.getElementById("eventTitle").innerText = `Register for: ${eventTitle}`;
+
+    // Show event link if available
+    if(eventLink){
+      const linkContainer = document.getElementById("eventLinkContainer");
+      linkContainer.style.display = "block";
+      document.getElementById("eventLink").href = eventLink;
+    }
 
     // Handle form submission
     document.getElementById("registerForm").addEventListener("submit", async (e) => {
@@ -57,12 +85,9 @@
 
       const studentName = document.getElementById("studentName").value;
       const studentEmail = document.getElementById("studentEmail").value;
-      const eventLink = urlParams.get("link");
-      if (eventLink) {
-        document.getElementById("eventLinkContainer").style.display = "block";
-         document.getElementById("eventLink").href = eventLink;
-         }
-
+      const studentPhone = document.getElementById("studentPhone").value;
+      const studentDept = document.getElementById("studentDept").value;
+      const studentSemester = document.getElementById("studentSemester").value;
 
       try {
         await addDoc(collection(db, "registrations"), {
@@ -70,6 +95,9 @@
           eventTitle,
           studentName,
           studentEmail,
+          studentPhone,
+          studentDept,
+          studentSemester,
           registeredAt: new Date()
         });
 
