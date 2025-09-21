@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register for Event</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+  <div class="container my-5">
+    <h2 id="eventTitle" class="mb-4">Register</h2>
+    <form id="registerForm" class="row g-3">
+      <div class="col-md-6">
+        <input type="text" id="studentName" class="form-control" placeholder="Your Name" required>
+      </div>
+      <div class="col-md-6">
+        <input type="email" id="studentEmail" class="form-control" placeholder="Your Email" required>
+      </div>
+      <div class="col-12">
+        <button type="submit" class="btn btn-primary">Submit Registration</button>
+      </div>
+    </form>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyD2iuNpJI0p1TSA_MdJ-9SNuE6QqeZJRt8",
+      authDomain: "lostandfound-f64d1.firebaseapp.com",
+      projectId: "lostandfound-f64d1",
+      storageBucket: "lostandfound-f64d1.appspot.com",
+      messagingSenderId: "226765931514",
+      appId: "1:226765931514:web:4b3ba5d6288e0273c05a43"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // Get event details from URL
+    const params = new URLSearchParams(window.location.search);
+    const eventId = params.get("eventId");
+    const eventTitle = params.get("title");
+    document.getElementById("eventTitle").innerText = `Register for: ${eventTitle}`;
+
+    // Handle form submission
+    document.getElementById("registerForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const studentName = document.getElementById("studentName").value;
+      const studentEmail = document.getElementById("studentEmail").value;
+
+      try {
+        await addDoc(collection(db, "registrations"), {
+          eventId,
+          eventTitle,
+          studentName,
+          studentEmail,
+          registeredAt: new Date()
+        });
+
+        alert("✅ Registration successful!");
+        window.location.href = "index.html";
+      } catch (err) {
+        console.error("Error registering:", err);
+        alert("❌ Failed to register. Try again.");
+      }
+    });
+  </script>
+</body>
+</html>
