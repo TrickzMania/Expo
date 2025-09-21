@@ -78,8 +78,11 @@
 
       <button type="submit" class="btn btn-primary">Submit Registration</button>
 
+      <!-- Event link displayed as clickable, non-editable -->
       <div class="event-link" id="eventLinkContainer" style="display:none;">
-        <p>Check event details: <a href="#" id="eventLink" target="_blank" class="btn btn-outline-primary">🔗 Open Event Link</a></p>
+        <p>Event Registration Link: 
+          <a href="#" id="eventLink" target="_blank" class="btn btn-outline-primary"></a>
+        </p>
       </div>
     </form>
   </div>
@@ -104,15 +107,23 @@
     const params = new URLSearchParams(window.location.search);
     const eventId = params.get("eventId");
     const eventTitle = params.get("title");
-    const eventLink = params.get("link");
+    const eventLinkParam = params.get("link");
 
-    document.getElementById("eventTitle").innerText = `Register for: ${eventTitle}`;
-
-    if(eventLink){
-      document.getElementById("eventLinkContainer").style.display = "block";
-      document.getElementById("eventLink").href = eventLink;
+    // Update event title
+    if (eventTitle) {
+      document.getElementById("eventTitle").innerText = `Register for: ${decodeURIComponent(eventTitle)}`;
     }
 
+    // Show clickable event link if provided
+    if (eventLinkParam) {
+      const decodedLink = decodeURIComponent(eventLinkParam);
+      document.getElementById("eventLinkContainer").style.display = "block";
+      const linkEl = document.getElementById("eventLink");
+      linkEl.href = decodedLink;
+      linkEl.innerText = decodedLink; // text shows the URL
+    }
+
+    // Handle form submission
     document.getElementById("registerForm").addEventListener("submit", async (e) => {
       e.preventDefault();
 
@@ -133,11 +144,11 @@
           studentSemester,
           registeredAt: new Date()
         });
-        alert("Registration successful!");
+        alert("✅ Registration successful!");
         window.location.href = "index.html";
       } catch (err) {
         console.error("Error registering:", err);
-        alert("Failed to register. Try again.");
+        alert("❌ Failed to register. Try again.");
       }
     });
   </script>
