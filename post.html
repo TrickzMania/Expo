@@ -78,6 +78,10 @@
         <div class="col-12 text-center mt-3">
           <button type="submit" class="btn btn-primary px-4 py-2">✔ Add Event</button>
         </div>
+        <div class="col-md-6">
+          <input type="url" id="eventLink" class="form-control" placeholder="Registration Form Link(optional)">
+       </div>
+
       </form>
     </div>
   </div>
@@ -117,6 +121,7 @@
       const organizer = document.getElementById("organizer").value;
       const date = new Date(document.getElementById("date").value);
       const duration = parseInt(document.getElementById("duration").value, 10);
+      const link= document.getElementById("eventLink").value || "" ;
 
       try {
         await addDoc(collection(db, "events"), {
@@ -126,6 +131,7 @@
           organizer,
           date,
           duration,
+          link,
           createdAt: new Date()
         });
 
