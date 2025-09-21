@@ -79,7 +79,7 @@
         const remaining = Math.floor((end - now) / 60000);
         return `🔴 Live Now (ends in ${remaining} min)`;
       } else {
-        return "✅ Event Ended";
+        return "Event Ended";
       }
     }
 
@@ -108,7 +108,7 @@
                 <span class="badge bg-info text-dark">${status}</span>
                 <br><br>
                 <a href="register.html?eventId=${doc.id}&title=${encodeURIComponent(data.title)}" 
-                   class="btn btn-success">✅ Register</a>
+                   class="btn btn-success">Register</a>
               </div>
             </div>
           </div>
