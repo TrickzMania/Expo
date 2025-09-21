@@ -75,13 +75,13 @@
           <label class="form-label fw-semibold">Description</label>
           <textarea id="description" class="form-control" rows="3" placeholder="Write a short description"></textarea>
         </div>
+        <div class="col-12">
+          <label class="form-label fw-semibold">Registration Form Link (Optional)</label>
+          <input type="url" id="eventLink" class="form-control" placeholder="https://example.com/register">
+        </div>
         <div class="col-12 text-center mt-3">
           <button type="submit" class="btn btn-primary px-4 py-2">✔ Add Event</button>
         </div>
-        <div class="col-md-6">
-          <input type="url" id="eventLink" class="form-control" placeholder="Registration Form Link(optional)">
-       </div>
-
       </form>
     </div>
   </div>
@@ -111,7 +111,6 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // Handle form submission
     document.getElementById("addEventForm").addEventListener("submit", async (e) => {
       e.preventDefault();
 
@@ -121,10 +120,10 @@
       const organizer = document.getElementById("organizer").value;
       const date = new Date(document.getElementById("date").value);
       const duration = parseInt(document.getElementById("duration").value, 10);
-      const link= document.getElementById("eventLink").value || "" ;
+      const link = document.getElementById("eventLink").value || "";
 
       try {
-        await addDoc(collection(db, "events"), {
+        const docRef = await addDoc(collection(db, "events"), {
           title,
           location,
           description,
@@ -136,7 +135,10 @@
         });
 
         alert("✅ Event added successfully!");
-        window.location.href = "index.html";
+
+        // Redirect to register.html with eventId and link
+        const registerUrl = `register.html?eventId=${docRef.id}&title=${encodeURIComponent(title)}&link=${encodeURIComponent(link)}`;
+        window.location.href = registerUrl;
 
       } catch (error) {
         console.error("Error adding event:", error);
