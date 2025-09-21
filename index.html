@@ -73,4 +73,52 @@
       const end = new Date(start.getTime() + duration * 60000);
 
       if (now < start) {
-        const diff = Math.floor((start
+        const diff = Math.floor((start - now) / 60000);
+        return diff <= 60 ? `⏳ Starts in ${diff} min` : "📌 Upcoming";
+      } else if (now >= start && now <= end) {
+        const remaining = Math.floor((end - now) / 60000);
+        return `🔴 Live Now (ends in ${remaining} min)`;
+      } else {
+        return "✅ Event Ended";
+      }
+    }
+
+    // Load all events
+    async function loadEvents() {
+      eventsContainer.innerHTML = "";
+      const querySnapshot = await getDocs(collection(db, "events"));
+
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        const eventDate = data.date.toDate ? data.date.toDate() : new Date(data.date);
+        const status = getEventStatus(eventDate, data.duration || 60);
+
+        const card = `
+          <div class="col-md-4 mb-4">
+            <div class="card shadow-sm h-100">
+              <img src="${data.imageUrl || 'https://picsum.photos/300/200'}" 
+                   class="card-img-top" alt="Event Poster">
+              <div class="card-body">
+                <h5 class="card-title">${data.title}</h5>
+                <p class="card-text">${data.description || ""}</p>
+                <p><strong>📍 ${data.location}</strong></p>
+                <p><strong>🗓 ${eventDate.toLocaleString()}</strong></p>
+                <p><strong>⏱ Duration:</strong> ${data.duration || 60} min</p>
+                <p><em>Organized by ${data.organizer || "N/A"}</em></p>
+                <span class="badge bg-info text-dark">${status}</span>
+                <br><br>
+                <a href="register.html?eventId=${doc.id}&title=${encodeURIComponent(data.title)}" 
+                   class="btn btn-success">✅ Register</a>
+              </div>
+            </div>
+          </div>
+        `;
+        eventsContainer.innerHTML += card;
+      });
+    }
+
+    loadEvents(); // initial load
+    setInterval(loadEvents, 60000); // refresh every 1 min
+  </script>
+</body>
+</html>
