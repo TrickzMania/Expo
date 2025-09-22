@@ -34,6 +34,12 @@
   <!-- Events Section -->
   <div class="container my-5">
     <h2 class="mb-4">Upcoming Events</h2>
+
+    <!-- 🔍 Search Bar -->
+    <div class="mb-4">
+      <input type="text" id="searchInput" class="form-control" placeholder="Search events by title or description...">
+    </div>
+
     <div class="row" id="eventsContainer">
       <!-- Event cards will load here -->
     </div>
@@ -66,6 +72,8 @@
     const db = getFirestore(app);
     const eventsContainer = document.getElementById("eventsContainer");
 
+    let allEvents = []; // store all events for searching
+
     // Helper: Get event status
     function getEventStatus(eventDate, duration) {
       const now = new Date();
@@ -86,6 +94,8 @@
     // Load all events
     async function loadEvents() {
       eventsContainer.innerHTML = "";
+      allEvents = []; // reset before loading
+
       const querySnapshot = await getDocs(collection(db, "events"));
 
       querySnapshot.forEach((doc) => {
@@ -93,30 +103,61 @@
         const eventDate = data.date.toDate ? data.date.toDate() : new Date(data.date);
         const status = getEventStatus(eventDate, data.duration || 60);
 
+        const eventObj = {
+          id: doc.id,
+          ...data,
+          date: eventDate,
+          status
+        };
+
+        allEvents.push(eventObj);
+      });
+
+      renderEvents(allEvents);
+    }
+
+    // Render events
+    function renderEvents(events) {
+      eventsContainer.innerHTML = "";
+      if (events.length === 0) {
+        eventsContainer.innerHTML = `<p class="text-muted">No events found.</p>`;
+        return;
+      }
+
+      events.forEach((data) => {
         const card = `
           <div class="col-md-4 mb-4">
             <div class="card shadow-sm h-100">
               <img src="${data.imageUrl || 'https://picsum.photos/300/200'}" 
-                  class="card-img-top" alt="Event Poster">
-             <div class="card-body">
-               <h5 class="card-title">${data.title}</h5>
-               <p class="card-text">${data.description || ""}</p>
-               <p><strong>📍 ${data.location}</strong></p>
-               <p><strong>🗓 ${eventDate.toLocaleString()}</strong></p>
-               <p><strong>⏱ Duration:</strong> ${data.duration || 60} min</p>
-               <p><em>Organized by ${data.organizer || "N/A"}</em></p>
-               <span class="badge bg-info text-dark">${status}</span>
-               <br><br>
-               <a href="register.html?eventId=${doc.id}&title=${encodeURIComponent(data.title)}&link=${encodeURIComponent(data.link || "")}" 
-                 class="btn btn-success w-100">Register</a>
-             </div>
-        </div>
-   </div>
-`;
-
+                   class="card-img-top" alt="Event Poster">
+              <div class="card-body">
+                <h5 class="card-title">${data.title}</h5>
+                <p class="card-text">${data.description || ""}</p>
+                <p><strong>📍 ${data.location}</strong></p>
+                <p><strong>🗓 ${data.date.toLocaleString()}</strong></p>
+                <p><strong>⏱ Duration:</strong> ${data.duration || 60} min</p>
+                <p><em>Organized by ${data.organizer || "N/A"}</em></p>
+                <span class="badge bg-info text-dark">${data.status}</span>
+                <br><br>
+                <a href="register.html?eventId=${data.id}&title=${encodeURIComponent(data.title)}&link=${encodeURIComponent(data.link || "")}" 
+                   class="btn btn-success w-100">Register</a>
+              </div>
+            </div>
+          </div>
+        `;
         eventsContainer.innerHTML += card;
       });
     }
+
+    // 🔍 Search Function
+    document.getElementById("searchInput").addEventListener("input", function () {
+      const query = this.value.toLowerCase();
+      const filtered = allEvents.filter(e =>
+        e.title.toLowerCase().includes(query) ||
+        (e.description && e.description.toLowerCase().includes(query))
+      );
+      renderEvents(filtered);
+    });
 
     loadEvents(); // initial load
     setInterval(loadEvents, 60000); // refresh every 1 min
