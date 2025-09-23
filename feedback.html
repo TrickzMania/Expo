@@ -42,7 +42,7 @@
     .hero-section {
       background: var(--primary-gradient);
       color: white;
-      padding: 8rem 0;
+      padding: 8rem 0 6rem;
       border-bottom-left-radius: 60px;
       border-bottom-right-radius: 60px;
       box-shadow: 0 10px 30px rgba(0,0,0,0.2);
@@ -51,10 +51,14 @@
       font-weight: 700;
       font-size: 3.5rem;
     }
+    .hero-section .lead {
+      font-size: 1.25rem;
+      font-weight: 500;
+      margin-top: 1rem;
+    }
     .feedback-card {
       max-width: 700px;
-      margin-top: -6rem; /* Pull card up into the hero section */
-      margin-left: auto;
+      margin-left: auto;
       margin-right: auto;
       padding: 3rem;
       border-radius: 1.5rem;
@@ -63,17 +67,6 @@
       position: relative;
       z-index: 1;
     }
-    .feedback-card h2 {
-      font-weight: 700;
-      color: var(--dark-blue);
-      margin-bottom: 0.5rem;
-    }
-    .feedback-card .event-title {
-      font-weight: 600;
-      font-size: 1.25rem;
-      color: #6c757d;
-      margin-bottom: 2rem;
-    }
     .form-label {
       font-weight: 600;
       color: #444;
@@ -129,8 +122,8 @@
   
   <div class="hero-section text-center d-flex align-items-center justify-content-center">
     <div class="container">
-      <h1>Event Feedback</h1>
-      <p class="lead" id="eventTitle"></p>
+      <h1 class="text-white">Event Feedback</h1>
+      <p id="eventTitle" class="lead"></p>
     </div>
   </div>
 
