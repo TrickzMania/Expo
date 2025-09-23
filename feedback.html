@@ -16,7 +16,7 @@
     :root {
       --dark-blue: #1a237e;
       --light-gray: #f0f2f5;
-      --primary-gradient: linear-gradient(135deg, #1a237e, #4a148c);
+      --primary-gradient: linear-gradient(45deg, #1a237e, #4a148c);
       --secondary-gradient: linear-gradient(45deg, #6a11cb, #2575fc);
     }
     body {
@@ -24,50 +24,34 @@
       min-height: 100vh;
       display: flex;
       flex-direction: column;
-      background: var(--primary-gradient);
+      background: var(--light-gray);
     }
-    .content-wrapper {
-      background: var(--light-gray);
-      border-bottom-left-radius: 60px;
-      border-bottom-right-radius: 60px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-      padding: 5rem 0 2rem;
-    }
     .navbar {
       background-color: var(--dark-blue) !important;
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-      position: fixed;
-      width: 100%;
-      top: 0;
-      z-index: 1030;
     }
     .navbar-brand {
       font-weight: 700;
       color: #fff !important;
     }
-    .hero-title {
-      color: white;
-      text-align: center;
-      margin-top: 3rem;
-      margin-bottom: 2rem;
-    }
-    .hero-title h1 {
-      font-weight: 700;
-      font-size: 3.5rem;
-    }
-    .hero-title .lead {
-      font-size: 1.25rem;
-      font-weight: 500;
-      margin-top: 1rem;
-    }
-    .feedback-card {
+    .feedback-card {
       max-width: 700px;
-      margin: auto;
-      padding: 3rem;
+      margin: auto;
+      padding: 3rem;
       border-radius: 1.5rem;
       background: #fff;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-    }
+    }
+    .feedback-card h2 {
+      font-weight: 700;
+      color: var(--dark-blue);
+      margin-bottom: 0.5rem;
+    }
+    .feedback-card p {
+      margin-bottom: 2rem;
+      font-style: italic;
+      color: #6c757d;
+    }
     .form-label {
       font-weight: 600;
       color: #444;
@@ -80,10 +64,6 @@
       border: 1px solid #ddd;
       transition: all 0.3s ease;
     }
-    textarea.form-control {
-      border-radius: 1.5rem;
-      padding: 1rem 1.5rem;
-    }
     .form-control:focus, .form-select:focus {
       border-color: #86b7fe;
       box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
@@ -107,7 +87,7 @@
     footer {
       background-color: var(--dark-blue) !important;
       color: white;
-      margin-top: auto;
+      margin-top: auto; /* Push footer to the bottom */
       padding: 2rem 0;
       text-align: center;
     }
@@ -115,94 +95,88 @@
 </head>
 <body>
 
-  <nav class="navbar navbar-dark sticky-top">
-    <div class="container-fluid">
-      <a class="navbar-brand" href="index.html">📅 Event Tracker</a>
-    </div>
-  </nav>
-  
-  <div class="hero-title">
-    <div class="container">
-      <h1>Event Feedback</h1>
-      <p id="eventTitle" class="lead"></p>
-    </div>
-  </div>
+  <nav class="navbar navbar-dark sticky-top"> 
+     <div class="container-fluid"> 
+       <a class="navbar-brand" href="index.html">📅 Event Tracker</a> 
+     </div> 
+   </nav> 
 
-  <div class="content-wrapper">
-    <div class="container my-5">
-      <div class="feedback-card">
-        <form id="feedbackForm" class="row g-4">
-          <div class="col-12">
-            <label class="form-label">How was the event?</label>
-            <select class="form-select" id="rating" required>
-              <option value="" disabled selected>Select a rating...</option>
-              <option>Excellent</option>
-              <option>Good</option>
-              <option>Acceptable</option>
-              <option>Poor</option>
-            </select>
-          </div>
-          <div class="col-12">
-            <label class="form-label">Detailed Feedback</label>
-            <textarea class="form-control" id="comments" rows="4" placeholder="Your suggestions, issues, or compliments..."></textarea>
-        </div>
-          <div class="col-12 text-center mt-5">
-            <button type="submit" class="btn btn-gradient btn-lg">Submit Feedback</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
+   <div class="container my-5"> 
+     <div class="feedback-card"> 
+       <h2 class="text-center">Event Feedback</h2> 
+       <p id="eventTitle" class="text-center"></p> 
+       <form id="feedbackForm" class="row g-4"> 
+         <div class="col-12"> 
+           <label class="form-label">How was the event?</label> 
+           <select class="form-select" id="rating" required> 
+             <option value="" disabled selected>Select a rating...</option> 
+             <option>Excellent</option> 
+             <option>Good</option> 
+             <option>Acceptable</option> 
+             <option>Poor</option> 
+           </select> 
+         </div> 
+         <div class="col-12"> 
+           <label class="form-label">Detailed Feedback</label> 
+           <textarea class="form-control" id="comments" rows="4" placeholder="Your suggestions, issues, or compliments..."></textarea> 
+         </div> 
+         <div class="col-12 text-center mt-5"> 
+           <button type="submit" class="btn btn-gradient">Submit Feedback</button> 
+         </div> 
+       </form> 
+     </div> 
+   </div> 
 
-  <footer class="text-white">
-    <div class="container">
-      <p class="mb-0">&copy; 2025 Smart Campus Event Tracker</p>
-    </div>
-  </footer>
-  
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+   <footer class="text-white"> 
+     <div class="container"> 
+       <p class="mb-0">&copy; 2025 Smart Campus Event Tracker</p> 
+     </div> 
+   </footer> 
+    
+   <script type="module"> 
+     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js"; 
+     import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js"; 
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyD2iuNpJI0p1TSA_MdJ-9SNuE6QqeZJRt8",
-      authDomain: "lostandfound-f64d1.firebaseapp.com",
-      projectId: "lostandfound-f64d1",
-      storageBucket: "lostandfound-f64d1.appspot.com",
-      messagingSenderId: "226765931514",
-      appId: "1:226765931514:web:4b3ba5d6288e0273c05a43"
-    };
+     const firebaseConfig = { 
+       apiKey: "AIzaSyD2iuNpJI0p1TSA_MdJ-9SNuE6QqeZJRt8", 
+       authDomain: "lostandfound-f64d1.firebaseapp.com", 
+       projectId: "lostandfound-f64d1", 
+       storageBucket: "lostandfound-f64d1.appspot.com", 
+       messagingSenderId: "226765931514", 
+       appId: "1:226765931514:web:4b3ba5d6288e0273c05a43" 
+     }; 
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+     const app = initializeApp(firebaseConfig); 
+     const db = getFirestore(app); 
 
-    // get event info from URL
-    const params = new URLSearchParams(window.location.search);
-    const eventId = params.get("eventId");
-    const eventTitle = params.get("title");
-    document.getElementById("eventTitle").innerText = eventTitle ? `for "${decodeURIComponent(eventTitle)}"` : "";
+     // get event info from URL 
+     const params = new URLSearchParams(window.location.search); 
+     const eventId = params.get("eventId"); 
+     const eventTitle = params.get("title"); 
+     document.getElementById("eventTitle").innerText = eventTitle ? `for "${decodeURIComponent(eventTitle)}"` : ""; 
 
-    // handle feedback submission
-    document.getElementById("feedbackForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const rating = document.getElementById("rating").value;
-      const comments = document.getElementById("comments").value;
+     // handle feedback submission 
+     document.getElementById("feedbackForm").addEventListener("submit", async (e) => { 
+       e.preventDefault(); 
+       const rating = document.getElementById("rating").value; 
+       const comments = document.getElementById("comments").value; 
 
-      try {
-        await addDoc(collection(db, "feedbacks"), {
-          eventId,
-          eventTitle: decodeURIComponent(eventTitle),
-          rating,
-          comments,
-          submittedAt: serverTimestamp()
-        });
-        alert("✅ Feedback submitted. Thank you!");
-        window.location.href = "index.html";
-      } catch (err) {
-        console.error(err);
-        alert("❌ Failed to submit feedback. Check console.");
-      }
-    });
-  </script>
-</body>
-</html>
+       try { 
+         await addDoc(collection(db, "feedbacks"), { 
+           eventId, 
+           eventTitle: decodeURIComponent(eventTitle), 
+           rating, 
+           comments, 
+           submittedAt: serverTimestamp() 
+         }); 
+         alert("✅ Feedback submitted. Thank you!"); 
+         window.location.href = "index.html"; 
+       } catch (err) { 
+         console.error(err); 
+         alert("❌ Failed to submit feedback. Check console."); 
+       } 
+     }); 
+   </script> 
+ </body> 
+ </html>
+The layout and the design still feel a bit off. Redesign it with the theme.
