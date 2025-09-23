@@ -29,6 +29,10 @@
     .navbar {
       background-color: var(--dark-blue) !important;
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      position: fixed;
+      width: 100%;
+      top: 0;
+      z-index: 1030;
     }
     .navbar-brand {
       font-weight: 700;
@@ -143,51 +147,55 @@
   <div class="container my-5">
     <div class="register-card">
       <h2 id="eventTitle">Register for Event</h2>
-      <form id="registerForm">
-        <div class="row g-4">
-          <div class="col-md-6">
-            <label for="studentName" class="form-label visually-hidden">Your Name</label>
-            <input type="text" id="studentName" class="form-control" placeholder="Your Name" required>
+      <div id="registrationFormContainer">
+        <form id="registerForm">
+          <div class="row g-4">
+            <div class="col-md-6">
+              <label for="studentName" class="form-label visually-hidden">Your Name</label>
+              <input type="text" id="studentName" class="form-control" placeholder="Your Name" required>
+            </div>
+            <div class="col-md-6">
+              <label for="studentEmail" class="form-label visually-hidden">Your Email</label>
+              <input type="email" id="studentEmail" class="form-control" placeholder="Your Email" required>
+            </div>
+            <div class="col-md-6">
+              <label for="studentPhone" class="form-label visually-hidden">Phone Number</label>
+              <input type="tel" id="studentPhone" class="form-control" placeholder="Phone Number" required>
+            </div>
+            <div class="col-md-6">
+              <label for="studentDept" class="form-label visually-hidden">Department</label>
+              <input type="text" id="studentDept" class="form-control" placeholder="Department" required>
+            </div>
+            <div class="col-md-6">
+              <label for="studentSemester" class="form-label visually-hidden">Select Semester</label>
+              <select id="studentSemester" class="form-select" required>
+                <option value="" disabled selected>Select Semester</option>
+                <option value="1">Semester 1</option>
+                <option value="2">Semester 2</option>
+                <option value="3">Semester 3</option>
+                <option value="4">Semester 4</option>
+                <option value="5">Semester 5</option>
+                <option value="6">Semester 6</option>
+                <option value="7">Semester 7</option>
+                <option value="8">Semester 8</option>
+              </select>
+            </div>
           </div>
-          <div class="col-md-6">
-            <label for="studentEmail" class="form-label visually-hidden">Your Email</label>
-            <input type="email" id="studentEmail" class="form-control" placeholder="Your Email" required>
-          </div>
-          <div class="col-md-6">
-            <label for="studentPhone" class="form-label visually-hidden">Phone Number</label>
-            <input type="tel" id="studentPhone" class="form-control" placeholder="Phone Number" required>
-          </div>
-          <div class="col-md-6">
-            <label for="studentDept" class="form-label visually-hidden">Department</label>
-            <input type="text" id="studentDept" class="form-control" placeholder="Department" required>
-          </div>
-          <div class="col-md-6">
-            <label for="studentSemester" class="form-label visually-hidden">Select Semester</label>
-            <select id="studentSemester" class="form-select" required>
-              <option value="" disabled selected>Select Semester</option>
-              <option value="1">Semester 1</option>
-              <option value="2">Semester 2</option>
-              <option value="3">Semester 3</option>
-              <option value="4">Semester 4</option>
-              <option value="5">Semester 5</option>
-              <option value="6">Semester 6</option>
-              <option value="7">Semester 7</option>
-              <option value="8">Semester 8</option>
-            </select>
-          </div>
-        </div>
-        <button type="submit" class="btn btn-gradient btn-lg mt-4 w-100">
-          <i class="fas fa-paper-plane me-2"></i> Submit Registration
-        </button>
-        <div class="divider">OR</div>
-        <div class="event-link-section" id="eventLinkContainer" style="display:none;">
+          <button type="submit" class="btn btn-gradient btn-lg mt-4 w-100">
+            <i class="fas fa-paper-plane me-2"></i> Submit Registration
+          </button>
+        </form>
+      </div>
+
+      <div id="externalLinkContainer" style="display:none;">
+        <div class="event-link-section">
           <h5><i class="fas fa-external-link-alt me-2"></i> External Registration Form</h5>
-          <p class="text-muted mb-4">Click the button below to register via the official event website.</p>
+          <p class="text-muted mb-4">This is an online event. Please use the official link to join.</p>
           <a href="#" id="eventLink" target="_blank" class="btn btn-outline-primary btn-lg">
-            <i class="fas fa-link me-2"></i> Go to Registration Form
+            <i class="fas fa-link me-2"></i> Go to Event
           </a>
         </div>
-      </form>
+      </div>
     </div>
   </div>
   <footer class="text-white">
@@ -199,6 +207,8 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
     import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+    import { doc, getDoc } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+
     const firebaseConfig = {
       apiKey: "AIzaSyD2iuNpJI0p1TSA_MdJ-9SNuE6QqeZJRt8",
       authDomain: "lostandfound-f64d1.firebaseapp.com",
@@ -207,21 +217,27 @@
       messagingSenderId: "226765931514",
       appId: "1:226765931514:web:4b3ba5d6288e0273c05a43"
     };
+
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+
     const params = new URLSearchParams(window.location.search);
     const eventId = params.get("eventId");
     const eventTitle = params.get("title");
     const eventLinkParam = params.get("link");
-    if (eventTitle) {
+
+    // Display appropriate section based on the event link
+    if (eventLinkParam && eventLinkParam !== 'null' && eventLinkParam !== '') {
+      document.getElementById("eventTitle").innerText = `Join: ${decodeURIComponent(eventTitle)}`;
+      document.getElementById("externalLinkContainer").style.display = 'block';
+      document.getElementById("registrationFormContainer").style.display = 'none';
+      document.getElementById("eventLink").href = decodeURIComponent(eventLinkParam);
+    } else {
       document.getElementById("eventTitle").innerText = `Register for: ${decodeURIComponent(eventTitle)}`;
+      document.getElementById("externalLinkContainer").style.display = 'none';
+      document.getElementById("registrationFormContainer").style.display = 'block';
     }
-    if (eventLinkParam) {
-      const decodedLink = decodeURIComponent(eventLinkParam);
-      const linkEl = document.getElementById("eventLink");
-      linkEl.href = decodedLink;
-      document.getElementById("eventLinkContainer").style.display = "block";
-    }
+
     document.getElementById("registerForm").addEventListener("submit", async (e) => {
       e.preventDefault();
       const studentName = document.getElementById("studentName").value;
