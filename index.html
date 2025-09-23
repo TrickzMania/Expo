@@ -125,6 +125,24 @@
       }
 
       events.forEach((data) => {
+        let actionButton = "";
+
+        if (data.status === "Event Ended") {
+          actionButton = `
+            <a href="feedback.html?eventId=${data.id}&title=${encodeURIComponent(data.title)}" 
+               class="btn btn-warning w-100">Give Feedback</a>
+          `;
+        } else if (data.status.startsWith("🔴 Live Now")) {
+          actionButton = `
+            <button class="btn btn-secondary w-100" disabled>Registration Closed</button>
+          `;
+        } else {
+          actionButton = `
+            <a href="register.html?eventId=${data.id}&title=${encodeURIComponent(data.title)}&link=${encodeURIComponent(data.link || "")}" 
+               class="btn btn-success w-100">Register</a>
+          `;
+        }
+
         const card = `
           <div class="col-md-4 mb-4">
             <div class="card shadow-sm h-100">
@@ -139,8 +157,7 @@
                 <p><em>Organized by ${data.organizer || "N/A"}</em></p>
                 <span class="badge bg-info text-dark">${data.status}</span>
                 <br><br>
-                <a href="register.html?eventId=${data.id}&title=${encodeURIComponent(data.title)}&link=${encodeURIComponent(data.link || "")}" 
-                   class="btn btn-success w-100">Register</a>
+                ${actionButton}
               </div>
             </div>
           </div>
