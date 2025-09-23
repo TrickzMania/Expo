@@ -38,14 +38,14 @@
     .hero-section {
       background: var(--primary-gradient);
       color: white;
-      padding: 6rem 0;
+      padding: 8rem 0;
       border-bottom-left-radius: 60px;
       border-bottom-right-radius: 60px;
       box-shadow: 0 10px 30px rgba(0,0,0,0.2);
     }
     .hero-section .display-4 {
       font-weight: 700;
-      font-size: 3rem;
+      font-size: 3.5rem;
     }
     .btn-gradient {
       background: var(--secondary-gradient);
@@ -193,10 +193,10 @@
     <h2 class="mb-4 fw-bold">Upcoming Events</h2>
 
     <div class="mb-4">
-      <input type="text" id="searchInput" class="form-control" placeholder="Search events by title or description...">
+      <input type="text" id="searchInput" class="form-control form-control-lg" placeholder="Search events by title or description...">
     </div>
 
-    <div class="row" id="eventsContainer">
+    <div class="row g-4" id="eventsContainer">
       </div>
   </div>
 
@@ -245,7 +245,6 @@
       const diff = Math.floor((start - now) / 60000);
 
       if (now >= start && now <= end) {
-        const remaining = Math.floor((end - now) / 60000);
         return { status: "🔴 Live Now", badgeClass: "badge-live" };
       } else if (diff <= 60 && diff > 0) {
         return { status: "⏳ Starts Soon", badgeClass: "badge-starts-soon" };
@@ -268,7 +267,7 @@
         let mainActionLink = "";
         let hoverInfoContent;
         const statusInfo = getEventStatus(data.date, data.duration || 60);
-
+        
         if (data.isOnline) {
           hoverInfoContent = `<a href="${data.link}" target="_blank" class="text-white text-decoration-none d-flex align-items-center"><i class="fas fa-link me-2"></i> Join Event</a>`;
           mainActionLink = `<a href="${data.link}" target="_blank" class="btn btn-primary w-100 mt-auto">Join Event</a>`;
@@ -293,14 +292,14 @@
         }
         
         const card = `
-          <div class="col-md-4 mb-5 d-flex">
+          <div class="col-md-4 d-flex">
             <div class="card shadow-sm h-100 w-100 d-flex flex-column">
               <div class="position-relative">
                 <img src="${data.imageUrl || 'https://picsum.photos/400/250'}" class="card-img-top" alt="Event Poster">
                 <span class="badge position-absolute top-0 start-0 m-3 ${statusInfo.badgeClass}">
                   ${statusInfo.status}
                 </span>
-                <span class="badge position-absolute top-0 end-0 m-3 ${data.isOnline ? 'badge-online' : 'badge-upcoming'}">
+                <span class="badge position-absolute top-0 end-0 m-3 ${data.isOnline ? 'badge-online' : ''}">
                   ${data.isOnline ? 'Online' : 'Offline'}
                 </span>
               </div>
