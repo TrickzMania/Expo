@@ -13,10 +13,11 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   
   <style>
     :root {
-      --primary-gradient: linear-gradient(45deg, #1a237e, #4a148c);
+      --primary-gradient: linear-gradient(135deg, #1a237e, #4a148c);
       --secondary-gradient: linear-gradient(45deg, #6a11cb, #2575fc);
       --card-gradient-border: linear-gradient(45deg, #4a148c, #2575fc);
       --dark-blue: #1a237e;
@@ -33,34 +34,6 @@
     .navbar-brand {
       font-weight: 700;
       color: #fff !important;
-    }
-    .hero-section {
-      background: var(--primary-gradient);
-      color: white;
-      padding: 6rem 0;
-      border-bottom-left-radius: 60px;
-      border-bottom-right-radius: 60px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-    }
-    .hero-section .display-4 {
-      font-weight: 700;
-      font-size: 3rem;
-    }
-    .btn-gradient {
-      background: var(--secondary-gradient);
-      border: none;
-      color: white;
-      border-radius: 50px;
-      padding: 1rem 2.5rem;
-      font-weight: 600;
-      letter-spacing: 1px;
-      transition: all 0.3s ease;
-      background-size: 200% auto;
-    }
-    .btn-gradient:hover {
-      background-position: right center;
-      transform: translateY(-3px);
-      box-shadow: 0 8px 25px rgba(0,0,0,0.3);
     }
     .card {
       border-radius: 1.25rem;
@@ -154,7 +127,7 @@
   <div class="hero-section text-center">
     <div class="container">
       <h1 class="display-4">Smart Campus Event Tracker</h1>
-      <p class="lead">Stay updated with the latest campus events. </p>
+      <p class="lead">Stay updated with the latest campus events.</p>
       <a href="post.html" class="btn btn-gradient btn-lg mt-4">➕ Add New Event</a>
     </div>
   </div>
@@ -236,23 +209,31 @@
     
       events.forEach((data) => {
         let actionButton = "";
+        let locationOrLink = "";
         const statusInfo = getEventStatus(data.date, data.duration || 60);
+
+        if (data.isOnline) {
+          locationOrLink = `<p class="mb-1 small text-muted"><strong>🌐 Online Event:</strong> <a href="${data.link}" target="_blank">${data.link}</a></p>`;
+          actionButton = `<a href="${data.link}" target="_blank" class="btn btn-primary w-100 mt-auto">Join Event</a>`;
+        } else {
+          locationOrLink = `<p class="mb-1 small text-muted"><strong>📍 Location:</strong> ${data.location}</p>`;
+          if (statusInfo.status === "Event Ended") {
+              actionButton = `<a href="feedback.html?eventId=${data.id}&title=${encodeURIComponent(data.title)}" class="btn btn-warning w-100 mt-auto">Give Feedback</a>`;
+          } else if (statusInfo.status.includes("Live")) {
+              actionButton = `<button class="btn btn-secondary w-100 mt-auto" disabled>Registration Closed</button>`;
+          } else {
+              actionButton = `<a href="register.html?eventId=${data.id}&title=${encodeURIComponent(data.title)}" class="btn btn-success w-100 mt-auto">Register</a>`;
+          }
+        }
         
-        if (statusInfo.status === "Event Ended") {
-          actionButton = `<a href="feedback.html?eventId=${data.id}&title=${encodeURIComponent(data.title)}" class="btn btn-warning w-100 mt-auto">Give Feedback</a>`;
-        } else if (statusInfo.status.includes("Live")) {
-          actionButton = `<button class="btn btn-secondary w-100 mt-auto" disabled>Registration Closed</button>`;
-          if (!liveNotified.has(data.id)) {
+        if (statusInfo.status.includes("Live") && !liveNotified.has(data.id)) {
             document.getElementById("toastMessage").innerText = `🔴 ${data.title} is now LIVE!`;
             const toastEl = document.getElementById('liveToast');
             const toast = new bootstrap.Toast(toastEl, { delay: 5000 });
             toast.show();
             liveNotified.add(data.id);
-          }
-        } else {
-          actionButton = `<a href="register.html?eventId=${data.id}&title=${encodeURIComponent(data.title)}&link=${encodeURIComponent(data.link || "")}" class="btn btn-success w-100 mt-auto">Register</a>`;
         }
-    
+        
         const card = `
           <div class="col-md-4 mb-5 d-flex">
             <div class="card shadow-sm h-100 w-100 d-flex flex-column">
@@ -267,7 +248,7 @@
                 <p class="card-text text-muted small mb-3">${data.description || ""}</p>
                 <div class="mt-auto">
                   <ul class="list-unstyled small mb-3">
-                    <li class="mb-1 text-muted"><strong>📍 Location:</strong> ${data.location}</li>
+                    ${locationOrLink}
                     <li class="mb-1 text-muted"><strong>🗓 Date:</strong> ${data.date.toLocaleString()}</li>
                     <li class="mb-1 text-muted"><strong>⏱ Duration:</strong> ${data.duration || 60} min</li>
                     <li class="text-muted"><strong>🗣 Organizer:</strong> ${data.organizer || "N/A"}</li>
