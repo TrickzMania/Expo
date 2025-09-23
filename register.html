@@ -79,11 +79,11 @@
       <button type="submit" class="btn btn-primary">Submit Registration</button>
 
       <!-- Event link displayed as clickable, non-editable -->
+    
       <div class="event-link" id="eventLinkContainer" style="display:none;">
-        <p>Event Registration Link: 
-          <a href="#" id="eventLink" target="_blank" class="btn btn-outline-primary"></a>
-        </p>
+          <a href="#" id="eventLink" target="_blank" class="btn btn-outline-primary w-100">Registration Link</a>
       </div>
+
     </form>
   </div>
 
@@ -115,13 +115,14 @@
     }
 
     // Show clickable event link if provided
-    if (eventLinkParam) {
-      const decodedLink = decodeURIComponent(eventLinkParam);
-      document.getElementById("eventLinkContainer").style.display = "block";
-      const linkEl = document.getElementById("eventLink");
-      linkEl.href = decodedLink;
-      linkEl.innerText = decodedLink; // text shows the URL
-    }
+  // Show clickable event link as a button if provided
+      if (eventLinkParam) {
+          const decodedLink = decodeURIComponent(eventLinkParam);
+          const linkEl = document.getElementById("eventLink");
+          linkEl.href = decodedLink;
+          document.getElementById("eventLinkContainer").style.display = "block";
+      }
+
 
     // Handle form submission
     document.getElementById("registerForm").addEventListener("submit", async (e) => {
