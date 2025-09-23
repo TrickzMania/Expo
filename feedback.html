@@ -24,9 +24,15 @@
       min-height: 100vh;
       display: flex;
       flex-direction: column;
-      background: var(--light-gray);
-      padding-top: 5rem;
+      background: var(--primary-gradient);
     }
+    .content-wrapper {
+      background: var(--light-gray);
+      border-bottom-left-radius: 60px;
+      border-bottom-right-radius: 60px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      padding: 5rem 0 2rem;
+    }
     .navbar {
       background-color: var(--dark-blue) !important;
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
@@ -39,34 +45,29 @@
       font-weight: 700;
       color: #fff !important;
     }
-    .hero-section {
-      background: var(--primary-gradient);
+    .hero-title {
       color: white;
-      padding: 8rem 0 6rem;
-      border-bottom-left-radius: 60px;
-      border-bottom-right-radius: 60px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      text-align: center;
+      margin-top: 3rem;
+      margin-bottom: 2rem;
     }
-    .hero-section h1 {
+    .hero-title h1 {
       font-weight: 700;
       font-size: 3.5rem;
     }
-    .hero-section .lead {
+    .hero-title .lead {
       font-size: 1.25rem;
       font-weight: 500;
       margin-top: 1rem;
     }
     .feedback-card {
       max-width: 700px;
-      margin-left: auto;
-      margin-right: auto;
-      padding: 3rem;
+      margin: auto;
+      padding: 3rem;
       border-radius: 1.5rem;
       background: #fff;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-      position: relative;
-      z-index: 1;
-    }
+    }
     .form-label {
       font-weight: 600;
       color: #444;
@@ -106,7 +107,7 @@
     footer {
       background-color: var(--dark-blue) !important;
       color: white;
-      margin-top: auto; /* Push footer to the bottom */
+      margin-top: auto;
       padding: 2rem 0;
       text-align: center;
     }
@@ -120,36 +121,38 @@
     </div>
   </nav>
   
-  <div class="hero-section text-center d-flex align-items-center justify-content-center">
+  <div class="hero-title">
     <div class="container">
-      <h1 class="text-white">Event Feedback</h1>
+      <h1>Event Feedback</h1>
       <p id="eventTitle" class="lead"></p>
     </div>
   </div>
 
-  <div class="container my-5">
-    <div class="feedback-card">
-      <form id="feedbackForm" class="row g-4">
-        <div class="col-12">
-          <label class="form-label">How was the event?</label>
-          <select class="form-select" id="rating" required>
-            <option value="" disabled selected>Select a rating...</option>
-            <option>Excellent</option>
-            <option>Good</option>
-            <option>Acceptable</option>
-            <option>Poor</option>
-          </select>
+  <div class="content-wrapper">
+    <div class="container my-5">
+      <div class="feedback-card">
+        <form id="feedbackForm" class="row g-4">
+          <div class="col-12">
+            <label class="form-label">How was the event?</label>
+            <select class="form-select" id="rating" required>
+              <option value="" disabled selected>Select a rating...</option>
+              <option>Excellent</option>
+              <option>Good</option>
+              <option>Acceptable</option>
+              <option>Poor</option>
+            </select>
+          </div>
+          <div class="col-12">
+            <label class="form-label">Detailed Feedback</label>
+            <textarea class="form-control" id="comments" rows="4" placeholder="Your suggestions, issues, or compliments..."></textarea>
         </div>
-        <div class="col-12">
-          <label class="form-label">Detailed Feedback</label>
-          <textarea class="form-control" id="comments" rows="4" placeholder="Your suggestions, issues, or compliments..."></textarea>
-        </div>
-        <div class="col-12 text-center mt-5">
-          <button type="submit" class="btn btn-gradient btn-lg">Submit Feedback</button>
-        </div>
-      </form>
+          <div class="col-12 text-center mt-5">
+            <button type="submit" class="btn btn-gradient btn-lg">Submit Feedback</button>
+          </div>
+        </form>
+      </div>
     </div>
-  </div>
+  </div>
 
   <footer class="text-white">
     <div class="container">
