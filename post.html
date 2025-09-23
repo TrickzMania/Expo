@@ -110,6 +110,11 @@
       padding: 2rem 0;
       text-align: center;
     }
+
+    /* Custom toggle switch styling */
+    .toggle-group .btn {
+        width: 150px;
+    }
   </style>
 </head>
 <body>
@@ -124,14 +129,31 @@
     <div class="form-card">
       <h2>Add New Event</h2>
       <form id="addEventForm" class="row g-4">
-        <div class="col-md-6">
+        <div class="col-12">
           <label for="title" class="form-label">Event Title</label>
           <input type="text" id="title" class="form-control" placeholder="Enter event title" required>
         </div>
-        <div class="col-md-6">
-          <label for="location" class="form-label">Location</label>
-          <input type="text" id="location" class="form-control" placeholder="Enter location" required>
+        <div class="col-12">
+          <label class="form-label">Event Type</label>
+          <div class="btn-group toggle-group d-flex" role="group">
+            <input type="radio" class="btn-check" name="eventType" id="typeOffline" autocomplete="off" checked>
+            <label class="btn btn-outline-primary rounded-pill me-2" for="typeOffline">Offline</label>
+            
+            <input type="radio" class="btn-check" name="eventType" id="typeOnline" autocomplete="off">
+            <label class="btn btn-outline-primary rounded-pill" for="typeOnline">Online</label>
+          </div>
         </div>
+        
+        <div id="offlineFields" class="col-12">
+          <label for="location" class="form-label">Location</label>
+          <input type="text" id="location" class="form-control" placeholder="Enter physical location">
+        </div>
+
+        <div id="onlineFields" class="col-12" style="display:none;">
+          <label for="eventLink" class="form-label">Event Link</label>
+          <input type="url" id="eventLink" class="form-control" placeholder="https://example.com/join">
+        </div>
+
         <div class="col-md-6">
           <label for="date" class="form-label">Date & Time</label>
           <input type="datetime-local" id="date" class="form-control" required>
@@ -152,10 +174,7 @@
           <label for="description" class="form-label">Description</label>
           <textarea id="description" class="form-control" rows="3" placeholder="Write a short description"></textarea>
         </div>
-        <div class="col-12">
-          <label for="eventLink" class="form-label">Registration Form Link (Optional)</label>
-          <input type="url" id="eventLink" class="form-control" placeholder="https://example.com/register">
-        </div>
+
         <div class="col-12 text-center mt-5">
           <button type="submit" class="btn btn-gradient btn-lg px-5">✅ Add Event</button>
         </div>
@@ -187,38 +206,55 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
+    const offlineFields = document.getElementById("offlineFields");
+    const onlineFields = document.getElementById("onlineFields");
+    const offlineRadio = document.getElementById("typeOffline");
+    const onlineRadio = document.getElementById("typeOnline");
+
+    offlineRadio.addEventListener('change', () => {
+      offlineFields.style.display = 'block';
+      onlineFields.style.display = 'none';
+    });
+
+    onlineRadio.addEventListener('change', () => {
+      offlineFields.style.display = 'none';
+      onlineFields.style.display = 'block';
+    });
+
     document.getElementById("addEventForm").addEventListener("submit", async (e) => {
       e.preventDefault();
 
       const title = document.getElementById("title").value;
-      const location = document.getElementById("location").value;
       const description = document.getElementById("description").value;
       const organizer = document.getElementById("organizer").value;
       const organizerEmail = document.getElementById("organizerEmail").value;
       const date = new Date(document.getElementById("date").value);
       const duration = parseInt(document.getElementById("duration").value, 10);
-      const link = document.getElementById("eventLink").value || "";
-      const imageUrl = "https://picsum.photos/800/600"; // Random image for demonstration
+      const imageUrl = "https://picsum.photos/800/600"; 
+
+      const eventData = {
+        title,
+        description,
+        organizer,
+        organizerEmail,
+        date,
+        duration,
+        imageUrl,
+        createdAt: serverTimestamp()
+      };
+
+      if (onlineRadio.checked) {
+        eventData.isOnline = true;
+        eventData.link = document.getElementById("eventLink").value || "";
+      } else {
+        eventData.isOnline = false;
+        eventData.location = document.getElementById("location").value || "";
+      }
 
       try {
-        await addDoc(collection(db, "events"), {
-          title,
-          location,
-          description,
-          organizer,
-          organizerEmail,
-          date,
-          duration,
-          link,
-          imageUrl,
-          createdAt: serverTimestamp()
-        });
-
+        await addDoc(collection(db, "events"), eventData);
         alert("✅ Event added successfully!");
-
-        // Redirect to the main page to see the new event
         window.location.href = "index.html";
-
       } catch (error) {
         console.error("Error adding event:", error);
         alert("❌ Failed to add event. Check console for details.");
