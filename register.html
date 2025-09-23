@@ -59,12 +59,19 @@
       text-align: center;
     }
 
+    /* Form labels */
+    .form-label {
+      font-weight: 600;
+      color: #444;
+      margin-bottom: 0.5rem;
+    }
+
     /* Input fields and select box */
     .form-control, .form-select {
       height: 55px;
-      margin-bottom: 20px;
+      margin-bottom: 20px; /* Space between fields */
       border: 1px solid #dee2e6;
-      border-radius: 50px;
+      border-radius: 50px; /* More rounded */
       padding: 0.75rem 1.5rem;
       transition: all 0.3s ease;
     }
@@ -111,10 +118,14 @@
       border-radius: 50px;
       transition: all 0.3s ease;
       font-weight: 500;
+      color: var(--dark-blue);
+      border-color: var(--dark-blue);
     }
     .btn-outline-primary:hover {
       transform: translateY(-2px);
       box-shadow: 0 4px 12px rgba(0,123,255,0.3);
+      background-color: var(--dark-blue);
+      color: white;
     }
 
     /* 'OR' divider styling */
@@ -133,6 +144,15 @@
     }
     .divider::before { margin-right: 1rem; }
     .divider::after { margin-left: 1rem; }
+
+    /* Footer styling */
+    footer {
+      background-color: var(--dark-blue) !important;
+      color: white;
+      margin-top: auto; /* Pushes the footer to the bottom */
+      padding: 2rem 0;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
@@ -150,24 +170,29 @@
       <form id="registerForm">
         <div class="row g-4">
           <div class="col-md-6">
+            <label for="studentName" class="form-label visually-hidden">Your Name</label>
             <input type="text" id="studentName" class="form-control" placeholder="Your Name" required>
           </div>
           <div class="col-md-6">
+            <label for="studentEmail" class="form-label visually-hidden">Your Email</label>
             <input type="email" id="studentEmail" class="form-control" placeholder="Your Email" required>
           </div>
         </div>
         
         <div class="row g-4 mt-1">
           <div class="col-md-6">
+            <label for="studentPhone" class="form-label visually-hidden">Phone Number</label>
             <input type="tel" id="studentPhone" class="form-control" placeholder="Phone Number" required>
           </div>
           <div class="col-md-6">
+            <label for="studentDept" class="form-label visually-hidden">Department</label>
             <input type="text" id="studentDept" class="form-control" placeholder="Department" required>
           </div>
         </div>
         
         <div class="row g-4 mt-1">
           <div class="col-md-6">
+            <label for="studentSemester" class="form-label visually-hidden">Select Semester</label>
             <select id="studentSemester" class="form-select" required>
               <option value="" disabled selected>Select Semester</option>
               <option value="1">Semester 1</option>
@@ -199,8 +224,10 @@
     </div>
   </div>
 
-  <footer class="bg-dark text-white text-center p-4 mt-5">
-    <p class="mb-0">&copy; 2025 Smart Campus Event Tracker</p>
+  <footer class="text-white">
+    <div class="container">
+      <p class="mb-0">&copy; 2025 Smart Campus Event Tracker</p>
+    </div>
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
