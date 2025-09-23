@@ -45,6 +45,18 @@
     </div>
   </div>
 
+  <!-- Toast Notification -->
+  <div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="liveToast" class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="d-flex">
+        <div class="toast-body" id="toastMessage">
+          🔴 An event just went LIVE!
+        </div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+      </div>
+    </div>
+  </div>
+
   <!-- Footer -->
   <footer class="bg-dark text-white text-center p-3">
     <p class="mb-0">&copy; 2025 Smart Campus Event Tracker</p>
@@ -73,6 +85,7 @@
     const eventsContainer = document.getElementById("eventsContainer");
 
     let allEvents = []; // store all events for searching
+    let liveNotified = new Set(); // track events already notified
 
     // Helper: Get event status
     function getEventStatus(eventDate, duration) {
@@ -117,56 +130,64 @@
     }
 
     // Render events
-        function renderEvents(events) {
+    function renderEvents(events) {
       eventsContainer.innerHTML = "";
-  if (events.length === 0) {
-    eventsContainer.innerHTML = `<p class="text-muted">No events found.</p>`;
-    return;
-  }
+      if (events.length === 0) {
+        eventsContainer.innerHTML = `<p class="text-muted">No events found.</p>`;
+        return;
+      }
 
-  events.forEach((data) => {
-    let actionButton = "";
+      events.forEach((data) => {
+        let actionButton = "";
 
-    if (data.status === "Event Ended") {
-      actionButton = `
-        <a href="feedback.html?eventId=${data.id}&title=${encodeURIComponent(data.title)}" 
-           class="btn btn-warning w-100">Give Feedback</a>
-      `;
-    } else if (data.status.startsWith("🔴 Live Now")) {
-      actionButton = `
-        <button class="btn btn-secondary w-100" disabled>Registration Closed</button>
-      `;
-    } else {
-      actionButton = `
-        <a href="register.html?eventId=${data.id}&title=${encodeURIComponent(data.title)}&link=${encodeURIComponent(data.link || "")}" 
-           class="btn btn-success w-100">Register</a>
-      `;
-    }
+        if (data.status === "Event Ended") {
+          actionButton = `
+            <a href="feedback.html?eventId=${data.id}&title=${encodeURIComponent(data.title)}" 
+               class="btn btn-warning w-100">Give Feedback</a>
+          `;
+        } else if (data.status.startsWith("🔴 Live Now")) {
+          actionButton = `
+            <button class="btn btn-secondary w-100" disabled>Registration Closed</button>
+          `;
 
-    const card = `
-      <div class="col-md-4 mb-4 d-flex">
-        <div class="card shadow-sm h-100 w-100 d-flex flex-column">
-          <img src="${data.imageUrl || 'https://picsum.photos/300/200'}" 
-               class="card-img-top" alt="Event Poster">
-          <div class="card-body d-flex flex-column">
-            <h5 class="card-title">${data.title}</h5>
-            <p class="card-text">${data.description || ""}</p>
-            <p><strong>📍 ${data.location}</strong></p>
-            <p><strong>🗓 ${data.date.toLocaleString()}</strong></p>
-            <p><strong>⏱ Duration:</strong> ${data.duration || 60} min</p>
-            <p><em>Organized by ${data.organizer || "N/A"}</em></p>
-            <span class="badge bg-info text-dark">${data.status}</span>
-            <div class="mt-auto pt-3">
-              ${actionButton}
+          // 🔔 Show toast if not already shown
+          if (!liveNotified.has(data.id)) {
+            document.getElementById("toastMessage").innerText = `🔴 ${data.title} is now LIVE!`;
+            const toastEl = document.getElementById('liveToast');
+            const toast = new bootstrap.Toast(toastEl, { delay: 5000 });
+            toast.show();
+            liveNotified.add(data.id);
+          }
+        } else {
+          actionButton = `
+            <a href="register.html?eventId=${data.id}&title=${encodeURIComponent(data.title)}&link=${encodeURIComponent(data.link || "")}" 
+               class="btn btn-success w-100">Register</a>
+          `;
+        }
+
+        const card = `
+          <div class="col-md-4 mb-4 d-flex">
+            <div class="card shadow-sm h-100 w-100 d-flex flex-column">
+              <img src="${data.imageUrl || 'https://picsum.photos/300/200'}" 
+                   class="card-img-top" alt="Event Poster">
+              <div class="card-body d-flex flex-column">
+                <h5 class="card-title">${data.title}</h5>
+                <p class="card-text">${data.description || ""}</p>
+                <p><strong>📍 ${data.location}</strong></p>
+                <p><strong>🗓 ${data.date.toLocaleString()}</strong></p>
+                <p><strong>⏱ Duration:</strong> ${data.duration || 60} min</p>
+                <p><em>Organized by ${data.organizer || "N/A"}</em></p>
+                <span class="badge bg-info text-dark">${data.status}</span>
+                <div class="mt-auto pt-3">
+                  ${actionButton}
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
-    `;
-    eventsContainer.innerHTML += card;
-  });
-}
-
+        `;
+        eventsContainer.innerHTML += card;
+      });
+    }
 
     // 🔍 Search Function
     document.getElementById("searchInput").addEventListener("input", function () {
