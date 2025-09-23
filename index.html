@@ -35,6 +35,34 @@
       font-weight: 700;
       color: #fff !important;
     }
+    .hero-section {
+      background: var(--primary-gradient);
+      color: white;
+      padding: 6rem 0;
+      border-bottom-left-radius: 60px;
+      border-bottom-right-radius: 60px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+    .hero-section .display-4 {
+      font-weight: 700;
+      font-size: 3rem;
+    }
+    .btn-gradient {
+      background: var(--secondary-gradient);
+      border: none;
+      color: white;
+      border-radius: 50px;
+      padding: 1rem 2.5rem;
+      font-weight: 600;
+      letter-spacing: 1px;
+      transition: all 0.3s ease;
+      background-size: 200% auto;
+    }
+    .btn-gradient:hover {
+      background-position: right center;
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    }
     .card {
       border-radius: 1.25rem;
       transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -218,13 +246,13 @@
 
       if (now >= start && now <= end) {
         const remaining = Math.floor((end - now) / 60000);
-        return { status: "🔴 Live Now", badgeClass: "badge-live", message: `(ends in ${remaining} min)` };
+        return { status: "🔴 Live Now", badgeClass: "badge-live" };
       } else if (diff <= 60 && diff > 0) {
-        return { status: "⏳ Starts Soon", badgeClass: "badge-starts-soon", message: `in ${diff} min` };
+        return { status: "⏳ Starts Soon", badgeClass: "badge-starts-soon" };
       } else if (now < start) {
-        return { status: "📌 Upcoming", badgeClass: "badge-upcoming", message: `on ${start.toLocaleDateString()}` };
+        return { status: "📌 Upcoming", badgeClass: "badge-upcoming" };
       } else {
-        return { status: "Event Ended", badgeClass: "bg-dark", message: "" };
+        return { status: "Event Ended", badgeClass: "bg-dark" };
       }
     }
 
@@ -237,24 +265,25 @@
       }
     
       events.forEach((data) => {
-        let actionButton = "";
-        let locationOrLink = "";
+        let mainActionLink = "";
+        let hoverInfoContent;
         const statusInfo = getEventStatus(data.date, data.duration || 60);
 
         if (data.isOnline) {
-          locationOrLink = `<p class="mb-1 small text-muted"><strong>🌐 Online Event:</strong> <a href="${data.link}" target="_blank">${data.link}</a></p>`;
-          actionButton = `<a href="${data.link}" target="_blank" class="btn btn-primary w-100 mt-auto">Join Event</a>`;
+          hoverInfoContent = `<a href="${data.link}" target="_blank" class="text-white text-decoration-none d-flex align-items-center"><i class="fas fa-link me-2"></i> Join Event</a>`;
+          mainActionLink = `<a href="${data.link}" target="_blank" class="btn btn-primary w-100 mt-auto">Join Event</a>`;
         } else {
-          locationOrLink = `<p class="mb-1 small text-muted"><strong>📍 Location:</strong> ${data.location}</p>`;
+          hoverInfoContent = `<p class="mb-0 text-white d-flex align-items-center"><i class="fas fa-map-marker-alt me-2"></i> ${data.location}</p>`;
           if (statusInfo.status === "Event Ended") {
-              actionButton = `<a href="feedback.html?eventId=${data.id}&title=${encodeURIComponent(data.title)}" class="btn btn-warning w-100 mt-auto">Give Feedback</a>`;
+            mainActionLink = `<a href="feedback.html?eventId=${data.id}&title=${encodeURIComponent(data.title)}" class="btn btn-warning w-100 mt-auto">Give Feedback</a>`;
           } else if (statusInfo.status.includes("Live")) {
-              actionButton = `<button class="btn btn-secondary w-100 mt-auto" disabled>Registration Closed</button>`;
+            mainActionLink = `<button class="btn btn-secondary w-100 mt-auto" disabled>Registration Closed</button>`;
           } else {
-              actionButton = `<a href="register.html?eventId=${data.id}&title=${encodeURIComponent(data.title)}" class="btn btn-success w-100 mt-auto">Register</a>`;
+            mainActionLink = `<a href="register.html?eventId=${data.id}&title=${encodeURIComponent(data.title)}&link=${data.link ? encodeURIComponent(data.link) : ''}" class="btn btn-success w-100 mt-auto">Register</a>`;
           }
         }
         
+        // Handle Toast Notification for live events
         if (statusInfo.status.includes("Live") && !liveNotified.has(data.id)) {
             document.getElementById("toastMessage").innerText = `🔴 ${data.title} is now LIVE!`;
             const toastEl = document.getElementById('liveToast');
@@ -268,11 +297,11 @@
             <div class="card shadow-sm h-100 w-100 d-flex flex-column">
               <div class="position-relative">
                 <img src="${data.imageUrl || 'https://picsum.photos/400/250'}" class="card-img-top" alt="Event Poster">
-                <span class="badge position-absolute top-0 end-0 m-3 ${statusInfo.badgeClass} ${data.isOnline ? 'badge-online' : ''}">
-                  ${data.isOnline ? 'Online' : 'Offline'}
-                </span>
                 <span class="badge position-absolute top-0 start-0 m-3 ${statusInfo.badgeClass}">
                   ${statusInfo.status}
+                </span>
+                <span class="badge position-absolute top-0 end-0 m-3 ${data.isOnline ? 'badge-online' : 'badge-upcoming'}">
+                  ${data.isOnline ? 'Online' : 'Offline'}
                 </span>
               </div>
               <div class="card-body d-flex flex-column">
@@ -285,15 +314,12 @@
                     <li class="text-muted"><strong>🗣 Organizer:</strong> ${data.organizer || "N/A"}</li>
                   </ul>
                   <div class="mt-auto pt-2">
-                    ${actionButton}
+                    ${mainActionLink}
                   </div>
                 </div>
               </div>
-              <div class="hover-info text-center d-flex align-items-center justify-content-center p-3">
-                  ${data.isOnline
-                      ? `<a href="${data.link}" target="_blank" class="text-white text-decoration-none d-flex align-items-center"><i class="fas fa-link me-2"></i> Join Online Event</a>`
-                      : `<p class="mb-0 text-white"><i class="fas fa-map-marker-alt me-2"></i> ${data.location}</p>`
-                  }
+              <div class="hover-info d-flex align-items-center justify-content-center p-3">
+                  ${hoverInfoContent}
               </div>
             </div>
           </div>
