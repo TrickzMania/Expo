@@ -13,14 +13,11 @@
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   
   <style>
-    /* Custom CSS Variables for a consistent color palette */
     :root {
       --dark-blue: #1a237e;
       --light-gray: #f0f2f5;
       --secondary-gradient: linear-gradient(45deg, #6a11cb, #2575fc);
     }
-
-    /* Overall body styling */
     body {
       font-family: 'Poppins', sans-serif;
       min-height: 100vh;
@@ -29,8 +26,6 @@
       background: var(--light-gray);
       padding-top: 5rem;
     }
-
-    /* Top Navigation Bar */
     .navbar {
       background-color: var(--dark-blue) !important;
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
@@ -39,8 +34,6 @@
       font-weight: 700;
       color: #fff !important;
     }
-
-    /* Main form container (the card) */
     .register-card {
       background: #fff;
       padding: 3.5rem;
@@ -50,23 +43,17 @@
       max-width: 700px;
       margin: auto;
     }
-
-    /* Heading inside the card */
     .register-card h2 {
       font-weight: 700;
       color: var(--dark-blue);
       margin-bottom: 2rem;
       text-align: center;
     }
-
-    /* Form labels */
     .form-label {
       font-weight: 600;
       color: #444;
       margin-bottom: 0.5rem;
     }
-
-    /* Input fields and select box */
     .form-control, .form-select {
       height: 55px;
       margin-bottom: 20px;
@@ -79,8 +66,6 @@
       border-color: #86b7fe;
       box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
     }
-
-    /* Gradient Button Styling */
     .btn-gradient {
       background: var(--secondary-gradient);
       border: none;
@@ -97,8 +82,6 @@
       transform: translateY(-3px);
       box-shadow: 0 8px 25px rgba(0,0,0,0.3);
     }
-
-    /* External Link section */
     .event-link-section {
       background: #f8f9fa;
       border-radius: 1.25rem;
@@ -127,8 +110,6 @@
       background-color: var(--dark-blue);
       color: white;
     }
-
-    /* 'OR' divider styling */
     .divider {
       display: flex;
       align-items: center;
@@ -144,8 +125,6 @@
     }
     .divider::before { margin-right: 1rem; }
     .divider::after { margin-left: 1rem; }
-
-    /* Footer styling */
     footer {
       background-color: var(--dark-blue) !important;
       color: white;
@@ -156,17 +135,14 @@
   </style>
 </head>
 <body>
-
   <nav class="navbar navbar-dark bg-dark fixed-top">
     <div class="container-fluid">
       <a class="navbar-brand" href="index.html">📅 Event Tracker</a>
     </div>
   </nav>
-
   <div class="container my-5">
     <div class="register-card">
       <h2 id="eventTitle">Register for Event</h2>
-      
       <form id="registerForm">
         <div class="row g-4">
           <div class="col-md-6">
@@ -200,13 +176,10 @@
             </select>
           </div>
         </div>
-
         <button type="submit" class="btn btn-gradient btn-lg mt-4 w-100">
           <i class="fas fa-paper-plane me-2"></i> Submit Registration
         </button>
-
         <div class="divider">OR</div>
-
         <div class="event-link-section" id="eventLinkContainer" style="display:none;">
           <h5><i class="fas fa-external-link-alt me-2"></i> External Registration Form</h5>
           <p class="text-muted mb-4">Click the button below to register via the official event website.</p>
@@ -217,19 +190,15 @@
       </form>
     </div>
   </div>
-
   <footer class="text-white">
     <div class="container">
       <p class="mb-0">&copy; 2025 Smart Campus Event Tracker</p>
     </div>
   </footer>
-
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
-
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
     import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
-
     const firebaseConfig = {
       apiKey: "AIzaSyD2iuNpJI0p1TSA_MdJ-9SNuE6QqeZJRt8",
       authDomain: "lostandfound-f64d1.firebaseapp.com",
@@ -238,39 +207,28 @@
       messagingSenderId: "226765931514",
       appId: "1:226765931514:web:4b3ba5d6288e0273c05a43"
     };
-
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-
-    // Get event details from URL
     const params = new URLSearchParams(window.location.search);
     const eventId = params.get("eventId");
     const eventTitle = params.get("title");
     const eventLinkParam = params.get("link");
-
-    // Update event title
     if (eventTitle) {
       document.getElementById("eventTitle").innerText = `Register for: ${decodeURIComponent(eventTitle)}`;
     }
-
-    // Show clickable event link as a styled button if provided
     if (eventLinkParam) {
       const decodedLink = decodeURIComponent(eventLinkParam);
       const linkEl = document.getElementById("eventLink");
       linkEl.href = decodedLink;
       document.getElementById("eventLinkContainer").style.display = "block";
     }
-
-    // Handle form submission
     document.getElementById("registerForm").addEventListener("submit", async (e) => {
       e.preventDefault();
-
       const studentName = document.getElementById("studentName").value;
       const studentEmail = document.getElementById("studentEmail").value;
       const studentPhone = document.getElementById("studentPhone").value;
       const studentDept = document.getElementById("studentDept").value;
       const studentSemester = document.getElementById("studentSemester").value;
-
       try {
         await addDoc(collection(db, "registrations"), {
           eventId,
@@ -282,7 +240,6 @@
           studentSemester,
           registeredAt: serverTimestamp()
         });
-        
         alert("✅ Registration successful!");
         window.location.href = "index.html";
       } catch (err) {
