@@ -1,1 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Event Feedback</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background: #f8f9fa;
+    }
+    .feedback-card {
+      max-width: 600px;
+      margin: auto;
+      margin-top: 50px;
+      padding: 2rem;
+      border-radius: 1rem;
+      background: #fff;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-dark bg-dark">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="index.html">📅 Event Tracker</a>
+    </div>
+  </nav>
+
+  <div class="feedback-card">
+    <h2 class="text-center">Event Feedback</h2>
+    <p id="eventTitle" class="text-center text-muted"></p>
+    <form id="feedbackForm">
+      <div class="mb-3">
+        <label class="form-label fw-semibold">How was the event?</label>
+        <select class="form-select" id="rating" required>
+          <option value="">Select...</option>
+          <option>Excellent</option>
+          <option>Good</option>
+          <option>Acceptable</option>
+          <option>Poor</option>
+        </select>
+      </div>
+      <div class="mb-3">
+        <label class="form-label fw-semibold">Detailed Feedback</label>
+        <textarea class="form-control" id="comments" rows="4" placeholder="Your suggestions, issues, or compliments..."></textarea>
+      </div>
+      <div class="text-center">
+        <button type="submit" class="btn btn-primary px-4">Submit Feedback</button>
+      </div>
+    </form>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyD2iuNpJI0p1TSA_MdJ-9SNuE6QqeZJRt8",
+      authDomain: "lostandfound-f64d1.firebaseapp.com",
+      projectId: "lostandfound-f64d1",
+      storageBucket: "lostandfound-f64d1.appspot.com",
+      messagingSenderId: "226765931514",
+      appId: "1:226765931514:web:4b3ba5d6288e0273c05a43"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // get event info from URL
+    const params = new URLSearchParams(window.location.search);
+    const eventId = params.get("eventId");
+    const eventTitle = params.get("title");
+    document.getElementById("eventTitle").innerText = eventTitle ? `(${eventTitle})` : "";
+
+    // handle feedback submission
+    document.getElementById("feedbackForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const rating = document.getElementById("rating").value;
+      const comments = document.getElementById("comments").value;
+
+      try {
+        await addDoc(collection(db, "feedbacks"), {
+          eventId,
+          rating,
+          comments,
+          submittedAt: new Date()
+        });
+        alert("✅ Feedback submitted. Thank you!");
+        window.location.href = "index.html";
+      } catch (err) {
+        console.error(err);
+        alert("❌ Failed to submit feedback. Check console.");
+      }
+    });
+  </script>
+</body>
+</html>
 
