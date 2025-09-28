@@ -207,7 +207,6 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
     import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
-    import { doc, getDoc } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyD2iuNpJI0p1TSA_MdJ-9SNuE6QqeZJRt8",
@@ -226,6 +225,7 @@
     const eventTitle = params.get("title");
     const eventLinkParam = params.get("link");
 
+    // Show appropriate content based on event type
     if (eventLinkParam && eventLinkParam !== 'null' && eventLinkParam !== '') {
       document.getElementById("eventTitle").innerText = `Join: ${decodeURIComponent(eventTitle)}`;
       document.getElementById("externalLinkContainer").style.display = 'block';
@@ -239,13 +239,24 @@
 
     document.getElementById("registerForm").addEventListener("submit", async (e) => {
       e.preventDefault();
-      const studentName = document.getElementById("studentName").value;
-      const studentEmail = document.getElementById("studentEmail").value;
-      const studentPhone = document.getElementById("studentPhone").value;
-      const studentDept = document.getElementById("studentDept").value;
-      const studentSemester = document.getElementById("studentSemester").value;
+      
+      const submitBtn = e.target.querySelector('button[type="submit"]');
+      const originalText = submitBtn.innerHTML;
+      
+      // Show loading state
+      submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Registering...';
+      submitBtn.disabled = true;
+
       try {
-        await addDoc(collection(db, "registrations"), {
+        const studentName = document.getElementById("studentName").value;
+        const studentEmail = document.getElementById("studentEmail").value;
+        const studentPhone = document.getElementById("studentPhone").value;
+        const studentDept = document.getElementById("studentDept").value;
+        const studentSemester = document.getElementById("studentSemester").value;
+
+        console.log("Attempting to register for event:", eventId);
+        
+        const registrationData = {
           eventId,
           eventTitle: decodeURIComponent(eventTitle),
           studentName,
@@ -253,13 +264,34 @@
           studentPhone,
           studentDept,
           studentSemester,
-          registeredAt: serverTimestamp()
-        });
-        alert("✅ Registration successful!");
+          registeredAt: serverTimestamp(),
+          registrationDate: new Date().toISOString()
+        };
+
+        console.log("Registration data:", registrationData);
+
+        // Try to save registration
+        await addDoc(collection(db, "registrations"), registrationData);
+        
+        console.log("Registration successful!");
+        alert("✅ Registration successful! You're registered for the event.");
         window.location.href = "index.html";
+        
       } catch (err) {
-        console.error("Error registering:", err);
-        alert("❌ Failed to register. Please try again.");
+        console.error("Registration error details:", err);
+        
+        // More specific error messages
+        if (err.code === 'permission-denied') {
+          alert("❌ Registration failed: Permission denied. This might be a security rule issue.");
+        } else if (err.code === 'unavailable') {
+          alert("❌ Registration failed: Network error. Please check your connection.");
+        } else {
+          alert("❌ Registration failed: " + err.message);
+        }
+      } finally {
+        // Restore button state
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
       }
     });
   </script>
