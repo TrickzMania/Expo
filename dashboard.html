@@ -450,20 +450,20 @@
                 ${registration ? `<br><small><i class="fas fa-user-check"></i> Registered on ${new Date(registration.registeredAt?.toDate()).toLocaleDateString()}</small>` : ''}
               </div>
               <div class="mt-auto pt-3">
-                ${isCreated ? 
-                  `<div class="d-flex">
-                    <a href="update-event.html?eventId=${eventId}" class="btn btn-edit">
-                      <i class="fas fa-edit me-1"></i> Update Event
-                    </a>
-                    <a href="register.html?eventId=${eventId}&title=${encodeURIComponent(event.title)}" class="btn btn-view">
-                      View Details
-                    </a>
-                  </div>` :
-                  isPastEvent && !isCreated ? 
-                  `<a href="feedback.html?eventId=${eventId}&title=${encodeURIComponent(event.title)}" class="btn btn-view w-100">Give Feedback</a>` :
-                  `<a href="register.html?eventId=${eventId}&title=${encodeURIComponent(event.title)}" class="btn btn-view w-100">View Details</a>`
-                }
-              </div>
+  ${isCreated ? 
+    `<div class="d-flex">
+      <a href="update-event.html?eventId=${eventId}" class="btn btn-edit">
+        <i class="fas fa-edit me-1"></i> Update Event
+      </a>
+      <a href="registrations.html?eventId=${eventId}&title=${encodeURIComponent(event.title)}" class="btn btn-view">
+        <i class="fas fa-users me-1"></i> View Registrations
+      </a>
+    </div>` :
+    isPastEvent && !isCreated ? 
+    `<a href="feedback.html?eventId=${eventId}&title=${encodeURIComponent(event.title)}" class="btn btn-view w-100">Give Feedback</a>` :
+    `<a href="register.html?eventId=${eventId}&title=${encodeURIComponent(event.title)}" class="btn btn-view w-100">View Details</a>`
+  }
+</div>
             </div>
           </div>
         </div>
