@@ -125,6 +125,12 @@
           <input type="url" id="eventLink" class="form-control" placeholder="https://example.com/join">
         </div>
 
+        <div class="col-12">
+          <label for="externalLink" class="form-label">External Registration Link</label>
+          <input type="url" id="externalLink" class="form-control" placeholder="https://example.com/register">
+          <small class="text-muted">Optional – Add an external registration link.</small>
+        </div>
+
         <div class="col-md-6">
           <label for="date" class="form-label">Date & Time</label>
           <input type="datetime-local" id="date" class="form-control" required>
@@ -222,6 +228,7 @@
           document.getElementById("description").value = currentEvent.description || "";
           document.getElementById("organizer").value = currentEvent.organizer || "";
           document.getElementById("organizerEmail").value = currentEvent.organizerEmail || "";
+          document.getElementById("externalLink").value = currentEvent.externalLink || "";
           
           // Set date (convert to local datetime string)
           const eventDate = currentEvent.date?.toDate ? currentEvent.date.toDate() : new Date(currentEvent.date);
@@ -261,6 +268,7 @@
       const organizerEmail = document.getElementById("organizerEmail").value;
       const date = new Date(document.getElementById("date").value);
       const duration = parseInt(document.getElementById("duration").value, 10);
+      const externalLink = document.getElementById("externalLink").value;
 
       const updateData = {
         title,
@@ -269,6 +277,7 @@
         organizerEmail,
         date,
         duration,
+        externalLink: externalLink || "",
         updatedAt: new Date()
       };
 
