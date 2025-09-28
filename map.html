@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Event Schedule - Roadmap</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
+  <style>
+    :root {
+      --dark-blue: #1a237e;
+      --light-gray: #f0f2f5;
+      --primary-gradient: linear-gradient(135deg, #1a237e, #4a148c);
+      --timeline-color: #6c757d;
+    }
+    
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: var(--light-gray);
+      padding-top: 5rem;
+    }
+
+    .navbar {
+      background-color: var(--dark-blue) !important;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      position: fixed;
+      width: 100%;
+      top: 0;
+      z-index: 1030;
+    }
+
+    .header-section {
+      background: var(--primary-gradient);
+      color: white;
+      padding: 3rem 0;
+      border-bottom-left-radius: 60px;
+      border-bottom-right-radius: 60px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      margin-bottom: 3rem;
+    }
+
+    /* Timeline Styling */
+    .timeline {
+      position: relative;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .timeline::after {
+      content: '';
+      position: absolute;
+      width: 6px;
+      background: var(--timeline-color);
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      margin-left: -3px;
+      border-radius: 10px;
+    }
+
+    .timeline-item {
+      padding: 10px 40px;
+      position: relative;
+      width: 50%;
+      box-sizing: border-box;
+    }
+
+    .timeline-item::after {
+      content: '';
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      background: var(--dark-blue);
+      border: 4px solid white;
+      top: 50%;
+      border-radius: 50%;
+      z-index: 1;
+    }
+
+    .left {
+      left: 0;
+    }
+
+    .left::after {
+      right: -10px;
+    }
+
+    .right {
+      left: 50%;
+    }
+
+    .right::after {
+      left: -10px;
+    }
+
+    .timeline-content {
+      padding: 20px 30px;
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      position: relative;
+      transition: transform 0.3s ease;
+    }
+
+    .timeline-content:hover {
+      transform: translateY(-5px);
+    }
+
+    .timeline-content::before {
+      content: '';
+      position: absolute;
+      width: 0;
+      height: 0;
+      top: 50%;
+      border-style: solid;
+    }
+
+    .left .timeline-content::before {
+      right: -10px;
+      border-width: 10px 0 10px 10px;
+      border-color: transparent transparent transparent white;
+    }
+
+    .right .timeline-content::before {
+      left: -10px;
+      border-width: 10px 10px 10px 0;
+      border-color: transparent white transparent transparent;
+    }
+
+    .event-date {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--dark-blue);
+      margin-bottom: 0.5rem;
+    }
+
+    .event-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .event-meta {
+      color: #666;
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+    }
+
+    .time-group {
+      margin-bottom: 3rem;
+    }
+
+    .time-group-title {
+      background: var(--dark-blue);
+      color: white;
+      padding: 0.5rem 1.5rem;
+      border-radius: 25px;
+      display: inline-block;
+      margin-bottom: 2rem;
+      font-weight: 600;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 4rem 2rem;
+      color: #666;
+    }
+
+    .empty-state i {
+      font-size: 4rem;
+      color: #ccc;
+      margin-bottom: 1rem;
+    }
+
+    @media screen and (max-width: 768px) {
+      .timeline::after {
+        left: 31px;
+      }
+
+      .timeline-item {
+        width: 100%;
+        padding-left: 70px;
+        padding-right: 25px;
+      }
+
+      .timeline-item::after {
+        left: 21px;
+      }
+
+      .left::after, .right::after {
+        left: 21px;
+      }
+
+      .left .timeline-content::before, 
+      .right .timeline-content::before {
+        left: -10px;
+        border-width: 10px 10px 10px 0;
+        border-color: transparent white transparent transparent;
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar navbar-dark bg-dark">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="index.html">📅 Event Tracker</a>
+      <div class="d-flex">
+        <a href="dashboard.html" class="btn btn-outline-light btn-sm me-2">Dashboard</a>
+        <a href="index.html" class="btn btn-outline-light btn-sm">Home</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="header-section">
+    <div class="container">
+      <h1 class="display-5 fw-bold">Event Schedule</h1>
+      <p class="lead mb-0">Your personal event roadmap - Chronological view of upcoming events</p>
+    </div>
+  </div>
+
+  <div class="container my-5">
+    <div id="timelineContainer">
+      <div class="text-center">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading timeline...</span>
+        </div>
+        <p class="mt-2 text-muted">Building your event roadmap...</p>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+    import { getFirestore, collection, getDocs, query, where, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyD2iuNpJI0p1TSA_MdJ-9SNuE6QqeZJRt8",
+      authDomain: "lostandfound-f64d1.firebaseapp.com",
+      projectId: "lostandfound-f64d1",
+      storageBucket: "lostandfound-f64d1.appspot.com",
+      messagingSenderId: "226765931514",
+      appId: "1:226765931514:web:4b3ba5d6288e0273c05a43"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        window.location.href = "index.html";
+        return;
+      }
+      await loadEventSchedule(user);
+    });
+
+    async function loadEventSchedule(user) {
+      try {
+        // Get user's registrations
+        const registrationsQuery = query(
+          collection(db, "registrations"), 
+          where("studentEmail", "==", user.email)
+        );
+        
+        const registrationsSnap = await getDocs(registrationsQuery);
+        const upcomingEvents = [];
+
+        // Get event details and filter out past events
+        const now = new Date();
+        
+        for (const docSnap of registrationsSnap.docs) {
+          const registration = docSnap.data();
+          const eventDoc = await getDoc(doc(db, "events", registration.eventId));
+          
+          if (eventDoc.exists()) {
+            const event = eventDoc.data();
+            const eventDate = event.date?.toDate ? event.date.toDate() : new Date(event.date);
+            
+            // Only include future events
+            if (eventDate >= now) {
+              // Check approval status
+              const approvalQuery = query(
+                collection(db, "approvals"),
+                where("eventId", "==", registration.eventId),
+                where("studentEmail", "==", registration.studentEmail)
+              );
+              const approvalSnap = await getDocs(approvalQuery);
+              const isApproved = !approvalSnap.empty;
+
+              upcomingEvents.push({
+                ...event,
+                id: eventDoc.id,
+                date: eventDate,
+                isApproved: isApproved,
+                registrationDate: registration.registeredAt?.toDate ? registration.registeredAt.toDate() : new Date(registration.registeredAt)
+              });
+            }
+          }
+        }
+
+        // Sort events by date
+        upcomingEvents.sort((a, b) => a.date - b.date);
+        
+        // Render timeline
+        renderTimeline(upcomingEvents);
+
+      } catch (error) {
+        console.error("Error loading event schedule:", error);
+        document.getElementById("timelineContainer").innerHTML = `
+          <div class="empty-state">
+            <i class="fas fa-exclamation-triangle"></i>
+            <h4>Error Loading Schedule</h4>
+            <p>Please try again later.</p>
+          </div>
+        `;
+      }
+    }
+
+    function renderTimeline(events) {
+      const container = document.getElementById("timelineContainer");
+      
+      if (events.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <i class="fas fa-calendar-plus"></i>
+            <h4>No Upcoming Events</h4>
+            <p>Register for events to see them in your schedule!</p>
+            <a href="index.html" class="btn btn-primary">Browse Events</a>
+          </div>
+        `;
+        return;
+      }
+
+      // Group events by time periods
+      const now = new Date();
+      const tomorrow = new Date(now);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      
+      const nextWeek = new Date(now);
+      nextWeek.setDate(nextWeek.getDate() + 7);
+      
+      const nextMonth = new Date(now);
+      nextMonth.setMonth(nextMonth.getMonth() + 1);
+
+      const todayEvents = events.filter(event => 
+        event.date.toDateString() === now.toDateString()
+      );
+      
+      const tomorrowEvents = events.filter(event => 
+        event.date.toDateString() === tomorrow.toDateString()
+      );
+      
+      const thisWeekEvents = events.filter(event => 
+        event.date > now && event.date <= nextWeek && 
+        !todayEvents.includes(event) && !tomorrowEvents.includes(event)
+      );
+      
+      const thisMonthEvents = events.filter(event => 
+        event.date > nextWeek && event.date <= nextMonth
+      );
+      
+      const futureEvents = events.filter(event => 
+        event.date > nextMonth
+      );
+
+      let html = '';
+
+      // Helper function to render event groups
+      const renderEventGroup = (title, eventList, groupClass = '') => {
+        if (eventList.length === 0) return '';
+        
+        return `
+          <div class="time-group ${groupClass}">
+            <h3 class="time-group-title">${title}</h3>
+            <div class="timeline">
+              ${eventList.map((event, index) => `
+                <div class="timeline-item ${index % 2 === 0 ? 'left' : 'right'}">
+                  <div class="timeline-content">
+                    <div class="event-date">
+                      ${formatDate(event.date)}
+                    </div>
+                    <div class="event-title">${event.title}</div>
+                    <div class="event-meta">
+                      <i class="far fa-clock me-1"></i>${event.date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                      ${event.location ? `<br><i class="fas fa-map-marker-alt me-1"></i>${event.location}` : ''}
+                      ${event.isOnline ? '<br><i class="fas fa-globe me-1"></i>Online Event' : ''}
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                      <span class="badge ${event.isApproved ? 'bg-success' : 'bg-warning text-dark'}">
+                        <i class="fas ${event.isApproved ? 'fa-check-circle' : 'fa-clock'} me-1"></i>
+                        ${event.isApproved ? 'Confirmed' : 'Pending'}
+                      </span>
+                      <a href="register.html?eventId=${event.id}&title=${encodeURIComponent(event.title)}" 
+                         class="btn btn-sm btn-outline-primary">
+                        Details
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      };
+
+      html += renderEventGroup('📅 Today', todayEvents);
+      html += renderEventGroup('🚀 Tomorrow', tomorrowEvents);
+      html += renderEventGroup('📋 This Week', thisWeekEvents);
+      html += renderEventGroup('📅 This Month', thisMonthEvents);
+      html += renderEventGroup('🔮 Future Events', futureEvents);
+
+      container.innerHTML = html;
+    }
+
+    function formatDate(date) {
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = date.getFullYear();
+      return `${day}.${month}.${year}`;
+    }
+  </script>
+</body>
+</html>
