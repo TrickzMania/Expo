@@ -300,6 +300,35 @@
     const db = getFirestore(app);
     const auth = getAuth(app);
 
+    async function cleanupExpiredEvents() {
+  try {
+    console.log("🔄 Checking for expired events...");
+    const now = new Date();
+    const tenMinutesAgo = new Date(now.getTime() - 10 * 60 * 1000);
+    
+    const eventsSnapshot = await getDocs(collection(db, 'events'));
+    const deletePromises = [];
+    
+    eventsSnapshot.forEach(doc => {
+      const event = doc.data();
+      const eventDate = event.date?.toDate ? event.date.toDate() : new Date(event.date);
+      const eventEnd = new Date(eventDate.getTime() + (event.duration || 60) * 60000);
+      
+      if (eventEnd <= tenMinutesAgo) {
+        console.log(`🗑️ Deleting expired event: ${event.title}`);
+        deletePromises.push(deleteDoc(doc.ref));
+      }
+    });
+    
+    if (deletePromises.length > 0) {
+      await Promise.all(deletePromises);
+      console.log(`✅ Cleaned up ${deletePromises.length} expired events`);
+    }
+  } catch (error) {
+    console.error('❌ Cleanup error:', error);
+  }
+}
+
     const eventsContainer = document.getElementById("eventsContainer");
     const loginBtn = document.getElementById("loginBtn");
     const logoutBtn = document.getElementById("logoutBtn");
@@ -503,29 +532,35 @@ document.querySelectorAll(".star-btn").forEach(btn => {
     }
 
     // Load events from Firestore
-    async function loadEvents() {
-      try {
-        const q = query(collection(db, "events"), orderBy("date", "desc"));
-        const querySnapshot = await getDocs(q);
-        allEvents = [];
-        querySnapshot.forEach((doc) => {
-          const data = doc.data();
-          const eventDate = data.date?.toDate ? data.date.toDate() : new Date(data.date);
-          allEvents.push({ id: doc.id, ...data, date: eventDate });
-        });
-        renderEvents(allEvents);
-      } catch (error) {
-        console.error("Error loading events:", error);
-        eventsContainer.innerHTML = `
-          <div class="col-12 text-center">
-            <div class="alert alert-danger">
-              <i class="fas fa-exclamation-triangle"></i>
-              Failed to load events. Please check your connection.
-            </div>
-          </div>
-        `;
-      }
-    }
+    // Update your existing loadEvents function (safe modification)
+async function loadEvents() {
+  try {
+    // 🔧 Add this line - clean up expired events first
+    await cleanupExpiredEvents();
+    
+    // Your existing event loading code continues unchanged
+    const q = query(collection(db, "events"), orderBy("date", "desc"));
+    const querySnapshot = await getDocs(q);
+    allEvents = [];
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      const eventDate = data.date?.toDate ? data.date.toDate() : new Date(data.date);
+      allEvents.push({ id: doc.id, ...data, date: eventDate });
+    });
+    renderEvents(allEvents);
+  } catch (error) {
+    // Your existing error handling
+    console.error("Error loading events:", error);
+    eventsContainer.innerHTML = `
+      <div class="col-12 text-center">
+        <div class="alert alert-danger">
+          <i class="fas fa-exclamation-triangle"></i>
+          Failed to load events. Please check your connection.
+        </div>
+      </div>
+    `;
+  }
+}
 
     // Search Function
     document.getElementById("searchInput").addEventListener("input", function () {
