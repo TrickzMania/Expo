@@ -256,20 +256,21 @@
 
         console.log("Attempting to register for event:", eventId);
         
-        const registrationData = {
-          eventId,
-          eventTitle: decodeURIComponent(eventTitle),
-          studentName,
-          studentEmail,
-          studentPhone,
-          studentDept,
-          studentSemester,
-          registeredAt: serverTimestamp(),
-          registrationDate: new Date().toISOString()
-        };
+        // In register.html form submission
+const registrationData = {
+  eventId,
+  eventTitle: decodeURIComponent(eventTitle),
+  studentName,
+  studentEmail, // This should match the logged-in user's email
+  studentPhone,
+  studentDept,
+  studentSemester,
+  registeredAt: serverTimestamp(),
+  registrationDate: new Date().toISOString()
+};
 
-        console.log("Registration data:", registrationData);
-
+console.log("Saving registration with email:", studentEmail);
+console.log("Current user email:", auth.currentUser?.email);
         // Try to save registration
         await addDoc(collection(db, "registrations"), registrationData);
         
