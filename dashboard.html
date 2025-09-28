@@ -457,12 +457,12 @@
                       <i class="fas fa-edit me-1"></i> Update
                     </a>
                     <a href="registrations.html?eventId=${eventId}&title=${encodeURIComponent(event.title)}" class="btn btn-view">
-                      <i class="fas fa-users me-1"></i> Registrations
+                      <i class="fas fa-users me-1"></i> View Registrations
                     </a>
                   </div>` :
                   isPastEvent && !isCreated ? 
                   `<a href="feedback.html?eventId=${eventId}&title=${encodeURIComponent(event.title)}" class="btn btn-view w-100">Give Feedback</a>` :
-                  `<a href="register.html?eventId=${eventId}&title=${encodeURIComponent(event.title)}" class="btn btn-view w-100">View Registrations</a>`
+                  `<a href="register.html?eventId=${eventId}&title=${encodeURIComponent(event.title)}" class="btn btn-view w-100">View Details</a>`
                 }
               </div>
             </div>
