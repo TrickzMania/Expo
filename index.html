@@ -314,22 +314,35 @@
     });
 
     // Helper: Get event status with more detail
-    function getEventStatus(eventDate, duration) {
-      const now = new Date();
-      const start = new Date(eventDate);
-      const end = new Date(start.getTime() + duration * 60000);
-      const diff = Math.floor((start - now) / 60000);
+ 
+  function getEventStatus(eventDate, duration) {
+  const now = new Date();
+  const start = new Date(eventDate);
+  const end = new Date(start.getTime() + (duration || 60) * 60000); // Default 60 min if not specified
+  
+  console.log("Event timing check:", {
+    now: now.toLocaleString(),
+    start: start.toLocaleString(), 
+    end: end.toLocaleString(),
+    isFuture: start > now,
+    isLive: now >= start && now <= end,
+    isPast: now > end
+  });
 
-      if (now >= start && now <= end) {
-        return { status: "🔴 Live Now", badgeClass: "badge-live" };
-      } else if (diff <= 60 && diff > 0) {
-        return { status: "⏳ Starts Soon", badgeClass: "badge-starts-soon" };
-      } else if (now < start) {
-        return { status: "📌 Upcoming", badgeClass: "badge-upcoming" };
-      } else {
-        return { status: "Event Ended", badgeClass: "bg-dark" };
-      }
+  if (now >= start && now <= end) {
+    return { status: "🔴 Live Now", badgeClass: "badge-live", isLive: true, isEnded: false };
+  } else if (start > now) {
+    // Event is in future
+    const hoursUntil = (start - now) / (1000 * 60 * 60);
+    if (hoursUntil <= 24) {
+      return { status: "⏳ Starts Soon", badgeClass: "badge-starts-soon", isLive: false, isEnded: false };
+    } else {
+      return { status: "📌 Upcoming", badgeClass: "badge-upcoming", isLive: false, isEnded: false };
     }
+  } else {
+    return { status: "Event Ended", badgeClass: "bg-secondary", isLive: false, isEnded: true };
+  }
+}
 
     // Load and render events
     function renderEvents(events) {
@@ -340,24 +353,33 @@
       }
     
       events.forEach((data) => {
-        let mainActionLink = "";
-        let hoverInfoContent;
-        const statusInfo = getEventStatus(data.date, data.duration || 60);
-        const isStarred = user && starredEvents.includes(data.id);
-        
-        if (data.isOnline) {
-          hoverInfoContent = `<a href="${data.link}" target="_blank" class="text-white text-decoration-none d-flex align-items-center"><i class="fas fa-link me-2"></i> Join Event</a>`;
-          mainActionLink = `<a href="${data.link}" target="_blank" class="btn btn-primary btn-sm">Join Event</a>`;
-        } else {
-          hoverInfoContent = `<p class="mb-0 text-white d-flex align-items-center"><i class="fas fa-map-marker-alt me-2"></i> ${data.location}</p>`;
-          if (statusInfo.status === "Event Ended") {
-            mainActionLink = `<a href="feedback.html?eventId=${data.id}&title=${encodeURIComponent(data.title)}" class="btn btn-warning btn-sm">Give Feedback</a>`;
-          } else if (statusInfo.status.includes("Live")) {
-            mainActionLink = `<button class="btn btn-secondary btn-sm" disabled>Registration Closed</button>`;
-          } else {
-            mainActionLink = `<a href="register.html?eventId=${data.id}&title=${encodeURIComponent(data.title)}&link=${data.link ? encodeURIComponent(data.link) : ''}" class="btn btn-success btn-sm">Register</a>`;
-          }
-        }
+  let mainActionLink = "";
+  let hoverInfoContent;
+  const statusInfo = getEventStatus(data.date, data.duration || 60);
+  const isStarred = user && starredEvents.includes(data.id);
+  
+  if (data.isOnline) {
+    hoverInfoContent = `<a href="${data.link}" target="_blank" class="text-white text-decoration-none d-flex align-items-center"><i class="fas fa-link me-2"></i> Join Event</a>`;
+    
+    if (statusInfo.isLive) {
+      mainActionLink = `<a href="${data.link}" target="_blank" class="btn btn-danger btn-sm">Join Live</a>`;
+    } else if (statusInfo.isEnded) {
+      mainActionLink = `<a href="feedback.html?eventId=${data.id}&title=${encodeURIComponent(data.title)}" class="btn btn-warning btn-sm">Give Feedback</a>`;
+    } else {
+      mainActionLink = `<a href="register.html?eventId=${data.id}&title=${encodeURIComponent(data.title)}&link=${encodeURIComponent(data.link)}" class="btn btn-success btn-sm">Register</a>`;
+    }
+  } else {
+    // Offline events
+    hoverInfoContent = `<p class="mb-0 text-white d-flex align-items-center"><i class="fas fa-map-marker-alt me-2"></i> ${data.location || 'Location not specified'}</p>`;
+    
+    if (statusInfo.isLive) {
+      mainActionLink = `<button class="btn btn-secondary btn-sm" disabled>Event Live</button>`;
+    } else if (statusInfo.isEnded) {
+      mainActionLink = `<a href="feedback.html?eventId=${data.id}&title=${encodeURIComponent(data.title)}" class="btn btn-warning btn-sm">Give Feedback</a>`;
+    } else {
+      mainActionLink = `<a href="register.html?eventId=${data.id}&title=${encodeURIComponent(data.title)}" class="btn btn-success btn-sm">Register</a>`;
+    }
+  }
         
         // Handle Toast Notification for live events
         if (statusInfo.status.includes("Live") && !liveNotified.has(data.id)) {
@@ -368,46 +390,45 @@
             liveNotified.add(data.id);
         }
         
-        const card = `
-          <div class="col-md-4 d-flex">
-            <div class="card shadow-sm h-100 w-100 d-flex flex-column">
-              <div class="position-relative">
-                <img src="${data.imageUrl || 'https://picsum.photos/400/250'}" class="card-img-top" alt="Event Poster">
-                <span class="badge position-absolute top-0 start-0 m-3 ${statusInfo.badgeClass}">
-                  ${statusInfo.status}
-                </span>
-                <span class="badge position-absolute top-0 end-0 m-3 ${data.isOnline ? 'badge-online' : ''}">
-                  ${data.isOnline ? 'Online' : 'Offline'}
-                </span>
-              </div>
-              <div class="card-body d-flex flex-column">
-                <h5 class="card-title fw-semibold">${data.title}</h5>
-                <p class="card-text text-muted small mb-3">${data.description || ""}</p>
-                <div class="mt-auto">
-                  <ul class="list-unstyled small mb-3">
-                    <li class="mb-1 text-muted"><strong>🗓 Date:</strong> ${data.date.toLocaleString()}</li>
-                    <li class="mb-1 text-muted"><strong>⏱ Duration:</strong> ${data.duration || 60} min</li>
-                    <li class="text-muted"><strong>🗣 Organizer:</strong> ${data.organizer || "N/A"}</li>
-                  </ul>
-                  <div class="d-flex justify-content-between align-items-center mt-auto pt-2">
-                    ${mainActionLink}
-                    ${user ? `
-                      <button class="star-btn ${isStarred ? 'active' : ''}" data-id="${data.id}">
-                        <i class="fa ${isStarred ? 'fa-star' : 'fa-star-o'}"></i>
-                      </button>
-                    ` : ""}
-                  </div>
-                </div>
-              </div>
-              <div class="hover-info d-flex align-items-center justify-content-center p-3">
-                  ${hoverInfoContent}
-              </div>
+       const card = `
+    <div class="col-md-4 d-flex">
+      <div class="card shadow-sm h-100 w-100 d-flex flex-column">
+        <div class="position-relative">
+          <img src="${data.imageUrl || 'https://picsum.photos/400/250'}" class="card-img-top" alt="Event Poster">
+          <span class="badge position-absolute top-0 start-0 m-3 ${statusInfo.badgeClass}">
+            ${statusInfo.status}
+          </span>
+          <span class="badge position-absolute top-0 end-0 m-3 ${data.isOnline ? 'badge-online' : ''}">
+            ${data.isOnline ? 'Online' : 'Offline'}
+          </span>
+        </div>
+        <div class="card-body d-flex flex-column">
+          <h5 class="card-title fw-semibold">${data.title}</h5>
+          <p class="card-text text-muted small mb-3">${data.description || ""}</p>
+          <div class="mt-auto">
+            <ul class="list-unstyled small mb-3">
+              <li class="mb-1 text-muted"><strong>🗓 Date:</strong> ${data.date.toLocaleString()}</li>
+              <li class="mb-1 text-muted"><strong>⏱ Duration:</strong> ${data.duration || 60} min</li>
+              <li class="text-muted"><strong>🗣 Organizer:</strong> ${data.organizer || "N/A"}</li>
+            </ul>
+            <div class="d-flex justify-content-between align-items-center mt-auto pt-2">
+              ${mainActionLink}
+              ${user ? `
+                <button class="star-btn ${isStarred ? 'active' : ''}" data-id="${data.id}">
+                  <i class="fa ${isStarred ? 'fa-star' : 'fa-star-o'}"></i>
+                </button>
+              ` : ""}
             </div>
           </div>
-        `;
-        eventsContainer.innerHTML += card;
-      });
-
+        </div>
+        <div class="hover-info d-flex align-items-center justify-content-center p-3">
+            ${hoverInfoContent}
+        </div>
+      </div>
+    </div>
+  `;
+  eventsContainer.innerHTML += card;
+});
       // Attach star toggle handlers
       document.querySelectorAll(".star-btn").forEach(btn => {
         btn.addEventListener("click", async () => {
