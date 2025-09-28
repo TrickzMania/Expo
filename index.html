@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Campus Event Tracker</title>
 
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#1a237e">
+  
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -32,6 +35,20 @@
       font-weight: 700;
       color: #fff !important;
     }
+    /* Navbar Alignment */
+    .navbar-collapse {
+      justify-content: flex-end; /* Pushes content to the right */
+    }
+    .navbar-nav {
+      align-items: center; /* Vertically align items like buttons and links */
+    }
+    .navbar-nav .nav-item {
+      margin-left: 1rem; /* Space between nav items */
+    }
+    .navbar-nav .btn {
+      margin-left: 1rem !important; /* Space for buttons */
+    }
+
     .hero-section {
       background: var(--primary-gradient);
       color: white;
@@ -60,21 +77,41 @@
       transform: translateY(-3px);
       box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
     }
-    .btn-secondary-link {
-        background-color: transparent;
-        border: 2px solid white;
-        color: white;
-        border-radius: 50px;
-        padding: 1rem 2.5rem;
-        font-weight: 600;
-        letter-spacing: 1px;
-        transition: all 0.3s ease;
+    /* New styles for professional login/logout buttons in navbar */
+    .btn-nav-login {
+      background: var(--secondary-gradient);
+      border: none;
+      color: white;
+      border-radius: 50px;
+      padding: 0.5rem 1.5rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      transition: all 0.3s ease;
+      background-size: 200% auto;
     }
-    .btn-secondary-link:hover {
-        background-color: rgba(255, 255, 255, 0.1);
-        border-color: #fff;
-        color: #fff;
+    .btn-nav-login:hover {
+      background-position: right center;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      color: white; /* Keep text white on hover */
     }
+    .btn-nav-logout {
+      background-color: #dc3545; /* Bootstrap danger color */
+      border: none;
+      color: white;
+      border-radius: 50px;
+      padding: 0.5rem 1.5rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      transition: all 0.3s ease;
+    }
+    .btn-nav-logout:hover {
+      background-color: #c82333; /* Darker danger on hover */
+      transform: translateY(-1px);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      color: white; /* Keep text white on hover */
+    }
+
     .card {
       border-radius: 1.25rem;
       transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -149,32 +186,45 @@
 
     /* Star button styling */
     .star-btn {
-  background: none;
-  border: none;
-  color: #ccc;
-  font-size: 1.3rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  opacity: 1 !important;
-  visibility: visible !important;
-  display: block !important;
-  padding: 0.5rem;
-  border-radius: 50%;
-}
+      background: none;
+      border: none;
+      color: #ccc;
+      font-size: 1.3rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      opacity: 1 !important;
+      visibility: visible !important;
+      display: block !important;
+      padding: 0.5rem;
+      border-radius: 50%;
+    }
+    .star-btn:hover {
+      background-color: rgba(255, 193, 7, 0.1);
+      transform: scale(1.1);
+    }
+    .star-btn.active {
+      color: #ffc107;
+    }
+    .star-btn.active:hover {
+      color: #ff6b6b;
+      transform: scale(1.1);
+    }
 
-.star-btn:hover {
-  background-color: rgba(255, 193, 7, 0.1);
-  transform: scale(1.1);
-}
+    /* Card Action Buttons */
+    .card-footer-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 0.5rem; /* Add some space above the buttons */
+    }
+    .card-footer-actions .btn {
+      flex-grow: 1; /* Allow button to grow */
+      margin-right: 0.5rem; /* Space between button and star */
+    }
+    .card-footer-actions .btn:last-child {
+      margin-right: 0;
+    }
 
-.star-btn.active {
-  color: #ffc107;
-}
-
-.star-btn.active:hover {
-  color: #ff6b6b;
-  transform: scale(1.1);
-}
     /* Hover Info Box */
     .hover-info {
         position: absolute;
@@ -226,8 +276,8 @@
           <li class="nav-item"><a class="nav-link" href="post.html">Add Event</a></li>
           <li class="nav-item"><a class="nav-link" href="dashboard.html">Dashboard</a></li>
           <li class="nav-item">
-            <button id="loginBtn" class="btn btn-sm btn-outline-light ms-3">Login</button>
-            <button id="logoutBtn" class="btn btn-sm btn-outline-danger ms-2 d-none">Logout</button>
+            <button id="loginBtn" class="btn btn-nav-login">Login</button>
+            <button id="logoutBtn" class="btn btn-nav-logout d-none">Logout</button>
           </li>
         </ul>
       </div>
@@ -313,33 +363,33 @@
     const auth = getAuth(app);
 
     async function cleanupExpiredEvents() {
-  try {
-    console.log("🔄 Checking for expired events...");
-    const now = new Date();
-    const tenMinutesAgo = new Date(now.getTime() - 10 * 60 * 1000);
-    
-    const eventsSnapshot = await getDocs(collection(db, 'events'));
-    const deletePromises = [];
-    
-    eventsSnapshot.forEach(doc => {
-      const event = doc.data();
-      const eventDate = event.date?.toDate ? event.date.toDate() : new Date(event.date);
-      const eventEnd = new Date(eventDate.getTime() + (event.duration || 60) * 60000);
-      
-      if (eventEnd <= tenMinutesAgo) {
-        console.log(`🗑️ Deleting expired event: ${event.title}`);
-        deletePromises.push(deleteDoc(doc.ref));
+      try {
+        console.log("🔄 Checking for expired events...");
+        const now = new Date();
+        const tenMinutesAgo = new Date(now.getTime() - 10 * 60 * 1000);
+        
+        const eventsSnapshot = await getDocs(collection(db, 'events'));
+        const deletePromises = [];
+        
+        eventsSnapshot.forEach(doc => {
+          const event = doc.data();
+          const eventDate = event.date?.toDate ? event.date.toDate() : new Date(event.date);
+          const eventEnd = new Date(eventDate.getTime() + (event.duration || 60) * 60000);
+          
+          if (eventEnd <= tenMinutesAgo) {
+            console.log(`🗑️ Deleting expired event: ${event.title}`);
+            deletePromises.push(deleteDoc(doc.ref));
+          }
+        });
+        
+        if (deletePromises.length > 0) {
+          await Promise.all(deletePromises);
+          console.log(`✅ Cleaned up ${deletePromises.length} expired events`);
+        }
+      } catch (error) {
+        console.error('❌ Cleanup error:', error);
       }
-    });
-    
-    if (deletePromises.length > 0) {
-      await Promise.all(deletePromises);
-      console.log(`✅ Cleaned up ${deletePromises.length} expired events`);
     }
-  } catch (error) {
-    console.error('❌ Cleanup error:', error);
-  }
-}
 
     const eventsContainer = document.getElementById("eventsContainer");
     const loginBtn = document.getElementById("loginBtn");
@@ -370,35 +420,34 @@
     });
 
     // Helper: Get event status with more detail
- 
-  function getEventStatus(eventDate, duration) {
-  const now = new Date();
-  const start = new Date(eventDate);
-  const end = new Date(start.getTime() + (duration || 60) * 60000); // Default 60 min if not specified
-  
-  console.log("Event timing check:", {
-    now: now.toLocaleString(),
-    start: start.toLocaleString(), 
-    end: end.toLocaleString(),
-    isFuture: start > now,
-    isLive: now >= start && now <= end,
-    isPast: now > end
-  });
+    function getEventStatus(eventDate, duration) {
+      const now = new Date();
+      const start = new Date(eventDate);
+      const end = new Date(start.getTime() + (duration || 60) * 60000); // Default 60 min if not specified
+      
+      console.log("Event timing check:", {
+        now: now.toLocaleString(),
+        start: start.toLocaleString(), 
+        end: end.toLocaleString(),
+        isFuture: start > now,
+        isLive: now >= start && now <= end,
+        isPast: now > end
+      });
 
-  if (now >= start && now <= end) {
-    return { status: "🔴 Live Now", badgeClass: "badge-live", isLive: true, isEnded: false };
-  } else if (start > now) {
-    // Event is in future
-    const hoursUntil = (start - now) / (1000 * 60 * 60);
-    if (hoursUntil <= 24) {
-      return { status: "⏳ Starts Soon", badgeClass: "badge-starts-soon", isLive: false, isEnded: false };
-    } else {
-      return { status: "📌 Upcoming", badgeClass: "badge-upcoming", isLive: false, isEnded: false };
+      if (now >= start && now <= end) {
+        return { status: "🔴 Live Now", badgeClass: "badge-live", isLive: true, isEnded: false };
+      } else if (start > now) {
+        // Event is in future
+        const hoursUntil = (start - now) / (1000 * 60 * 60);
+        if (hoursUntil <= 24) {
+          return { status: "⏳ Starts Soon", badgeClass: "badge-starts-soon", isLive: false, isEnded: false };
+        } else {
+          return { status: "📌 Upcoming", badgeClass: "badge-upcoming", isLive: false, isEnded: false };
+        }
+      } else {
+        return { status: "Event Ended", badgeClass: "bg-secondary", isLive: false, isEnded: true };
+      }
     }
-  } else {
-    return { status: "Event Ended", badgeClass: "bg-secondary", isLive: false, isEnded: true };
-  }
-}
 
     // Load and render events
     function renderEvents(events) {
@@ -409,34 +458,34 @@
       }
     
       events.forEach((data) => {
-  let mainActionLink = "";
-  let hoverInfoContent;
-  const statusInfo = getEventStatus(data.date, data.duration || 60);
-  const isStarred = user && starredEvents.includes(data.id);
-  
-  if (data.isOnline) {
-    hoverInfoContent = `<a href="${data.link}" target="_blank" class="text-white text-decoration-none d-flex align-items-center"><i class="fas fa-link me-2"></i> Join Event</a>`;
-    
-    if (statusInfo.isLive) {
-      mainActionLink = `<a href="${data.link}" target="_blank" class="btn btn-danger btn-sm">Join Live</a>`;
-    } else if (statusInfo.isEnded) {
-      mainActionLink = `<a href="feedback.html?eventId=${data.id}&title=${encodeURIComponent(data.title)}" class="btn btn-warning btn-sm">Give Feedback</a>`;
-    } else {
-      mainActionLink = `<a href="register.html?eventId=${data.id}&title=${encodeURIComponent(data.title)}&link=${encodeURIComponent(data.link)}" class="btn btn-success btn-sm">Register</a>`;
-    }
-  } else {
-    // Offline events
-    hoverInfoContent = `<p class="mb-0 text-white d-flex align-items-center"><i class="fas fa-map-marker-alt me-2"></i> ${data.location || 'Location not specified'}</p>`;
-    
-    if (statusInfo.isLive) {
-      mainActionLink = `<button class="btn btn-secondary btn-sm" disabled>Event Live</button>`;
-    } else if (statusInfo.isEnded) {
-      mainActionLink = `<a href="feedback.html?eventId=${data.id}&title=${encodeURIComponent(data.title)}" class="btn btn-warning btn-sm">Give Feedback</a>`;
-    } else {
-      mainActionLink = `<a href="register.html?eventId=${data.id}&title=${encodeURIComponent(data.title)}" class="btn btn-success btn-sm">Register</a>`;
-    }
-  }
+        let mainActionLink = "";
+        let hoverInfoContent;
+        const statusInfo = getEventStatus(data.date, data.duration || 60);
+        const isStarred = user && starredEvents.includes(data.id);
         
+        if (data.isOnline) {
+          hoverInfoContent = `<a href="${data.link}" target="_blank" class="text-white text-decoration-none d-flex align-items-center"><i class="fas fa-link me-2"></i> Join Event</a>`;
+          
+          if (statusInfo.isLive) {
+            mainActionLink = `<a href="${data.link}" target="_blank" class="btn btn-danger btn-sm">Join Live</a>`;
+          } else if (statusInfo.isEnded) {
+            mainActionLink = `<a href="feedback.html?eventId=${data.id}&title=${encodeURIComponent(data.title)}" class="btn btn-warning btn-sm">Give Feedback</a>`;
+          } else {
+            mainActionLink = `<a href="register.html?eventId=${data.id}&title=${encodeURIComponent(data.title)}&link=${encodeURIComponent(data.link)}" class="btn btn-success btn-sm">Register</a>`;
+          }
+        } else {
+          // Offline events
+          hoverInfoContent = `<p class="mb-0 text-white d-flex align-items-center"><i class="fas fa-map-marker-alt me-2"></i> ${data.location || 'Location not specified'}</p>`;
+          
+          if (statusInfo.isLive) {
+            mainActionLink = `<button class="btn btn-secondary btn-sm" disabled>Event Live</button>`;
+          } else if (statusInfo.isEnded) {
+            mainActionLink = `<a href="feedback.html?eventId=${data.id}&title=${encodeURIComponent(data.title)}" class="btn btn-warning btn-sm">Give Feedback</a>`;
+          } else {
+            mainActionLink = `<a href="register.html?eventId=${data.id}&title=${encodeURIComponent(data.title)}" class="btn btn-success btn-sm">Register</a>`;
+          }
+        }
+              
         // Handle Toast Notification for live events
         if (statusInfo.status.includes("Live") && !liveNotified.has(data.id)) {
             document.getElementById("toastMessage").innerText = `🔴 ${data.title} is now LIVE!`;
@@ -467,7 +516,7 @@
               <li class="mb-1 text-muted"><strong>⏱ Duration:</strong> ${data.duration || 60} min</li>
               <li class="text-muted"><strong>🗣 Organizer:</strong> ${data.organizer || "N/A"}</li>
             </ul>
-            <div class="d-flex justify-content-between align-items-center mt-auto pt-2">
+            <div class="card-footer-actions">
               ${mainActionLink}
             ${user ? `
   <button class="star-btn ${isStarred ? 'active' : ''}" 
@@ -487,7 +536,6 @@
   `;
   eventsContainer.innerHTML += card;
 });
-      // Attach star toggle handlers
       // Attach star toggle handlers
 document.querySelectorAll(".star-btn").forEach(btn => {
   btn.addEventListener("click", async (e) => {
@@ -544,7 +592,6 @@ document.querySelectorAll(".star-btn").forEach(btn => {
     }
 
     // Load events from Firestore
-    // Update your existing loadEvents function (safe modification)
 async function loadEvents() {
   try {
     // 🔧 Add this line - clean up expired events first
