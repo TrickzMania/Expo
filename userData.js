@@ -3,17 +3,27 @@ import { getFirestore, doc, setDoc, getDoc, collection, getDocs }
   from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
 // ⭐ Star an event
+// userData.js
 export async function toggleStar(userId, eventId) {
   try {
     const db = getFirestore();
     const starRef = doc(db, "users", userId, "stars", eventId);
     const snap = await getDoc(starRef);
 
+    console.log("Current star state:", snap.exists());
+
     if (snap.exists()) {
-      await setDoc(starRef, {}, { merge: false }); // remove
+      // Remove star
+      await deleteDoc(starRef);
+      console.log("Star removed for event:", eventId);
       return false;
     } else {
-      await setDoc(starRef, { starredAt: new Date() });
+      // Add star
+      await setDoc(starRef, { 
+        starredAt: new Date(),
+        eventId: eventId 
+      });
+      console.log("Star added for event:", eventId);
       return true;
     }
   } catch (error) {
