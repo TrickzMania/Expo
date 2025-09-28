@@ -134,6 +134,8 @@
     <div class="container-fluid">
       <a class="navbar-brand" href="index.html">📅 Event Tracker</a>
       <div class="d-flex">
+        <a href="index.html" class="btn btn-outline-light btn-sm me-2">Home</a>
+        <a href="dashboard.html" class="btn btn-outline-light btn-sm me-2">Dashboard</a>
         <button id="loginBtn" class="btn btn-outline-light btn-sm me-2">Login</button>
         <button id="logoutBtn" class="btn btn-outline-danger btn-sm d-none">Logout</button>
       </div>
@@ -143,6 +145,12 @@
   <div class="container my-5">
     <div class="form-card" id="formContainer">
       <!-- Content will be dynamically shown based on auth state -->
+      <div class="text-center">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2 text-muted">Checking authentication...</p>
+      </div>
     </div>
   </div>
 
