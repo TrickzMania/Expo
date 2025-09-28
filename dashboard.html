@@ -16,6 +16,7 @@
     :root {
       --dark-blue: #1a237e;
       --light-gray: #f0f2f5;
+      --primary-gradient: linear-gradient(135deg, #1a237e, #4a148c);
       --secondary-gradient: linear-gradient(45deg, #6a11cb, #2575fc);
     }
     
@@ -38,7 +39,43 @@
       color: #fff !important;
     }
 
-    .dashboard-card {
+    .dashboard-header {
+      background: var(--primary-gradient);
+      color: white;
+      padding: 3rem 0;
+      border-bottom-left-radius: 60px;
+      border-bottom-right-radius: 60px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      margin-bottom: 3rem;
+    }
+
+    .stats-card {
+      background: white;
+      border-radius: 1rem;
+      padding: 1.5rem;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+      text-align: center;
+      transition: transform 0.3s ease;
+      border-left: 4px solid var(--dark-blue);
+    }
+
+    .stats-card:hover {
+      transform: translateY(-5px);
+    }
+
+    .stats-number {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--dark-blue);
+      margin-bottom: 0.5rem;
+    }
+
+    .stats-label {
+      color: #666;
+      font-weight: 500;
+    }
+
+    .section-card {
       background: #fff;
       border-radius: 1.5rem;
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
@@ -52,6 +89,9 @@
       font-weight: 700;
       margin-bottom: 1.5rem;
       font-size: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
     }
 
     .event-card {
@@ -161,28 +201,66 @@
     </div>
   </nav>
 
+  <div class="dashboard-header">
+    <div class="container">
+      <h1 class="display-5 fw-bold">Your Dashboard</h1>
+      <p class="lead mb-0">Manage your events and activities in one place</p>
+    </div>
+  </div>
+
   <div class="container my-5">
-    <div class="dashboard-card">
-      <h2 class="section-title">📊 Your Dashboard</h2>
-      <p class="text-muted">Manage your starred events and created events in one place.</p>
+    <!-- Statistics Cards -->
+    <div class="row g-4 mb-5">
+      <div class="col-md-4">
+        <div class="stats-card">
+          <div class="stats-number" id="starredCount">0</div>
+          <div class="stats-label">Starred Events</div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="stats-card">
+          <div class="stats-number" id="createdCount">0</div>
+          <div class="stats-label">Events Created</div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="stats-card">
+          <div class="stats-number" id="registeredCount">0</div>
+          <div class="stats-label">Registrations</div>
+        </div>
+      </div>
     </div>
 
     <!-- Starred Events Section -->
-    <div class="dashboard-card">
+    <div class="section-card">
       <div class="d-flex justify-content-between align-items-center">
-        <h3 class="section-title mb-0">⭐ Starred Events</h3>
-        <span id="starredUpdateBadge" class="update-badge d-none">Updated</span>
+        <h3 class="section-title">
+          <i class="fas fa-star"></i> Starred Events
+        </h3>
+        <span id="starredUpdateBadge" class="update-badge d-none">New</span>
       </div>
-      <div id="starredContainer" class="row g-4 mt-3"></div>
+      <div id="starredContainer" class="row g-4"></div>
     </div>
 
     <!-- Created Events Section -->
-    <div class="dashboard-card">
+    <div class="section-card">
       <div class="d-flex justify-content-between align-items-center">
-        <h3 class="section-title mb-0">📌 Your Created Events</h3>
-        <span id="createdUpdateBadge" class="update-badge d-none">Updated</span>
+        <h3 class="section-title">
+          <i class="fas fa-calendar-plus"></i> Your Created Events
+        </h3>
+        <span id="createdUpdateBadge" class="update-badge d-none">New</span>
       </div>
-      <div id="createdContainer" class="row g-4 mt-3"></div>
+      <div id="createdContainer" class="row g-4"></div>
+    </div>
+
+    <!-- Registered Events Section -->
+    <div class="section-card">
+      <div class="d-flex justify-content-between align-items-center">
+        <h3 class="section-title">
+          <i class="fas fa-clipboard-check"></i> Your Registrations
+        </h3>
+      </div>
+      <div id="registeredContainer" class="row g-4"></div>
     </div>
   </div>
 
@@ -214,9 +292,11 @@
 
     const starredContainer = document.getElementById("starredContainer");
     const createdContainer = document.getElementById("createdContainer");
+    const registeredContainer = document.getElementById("registeredContainer");
     const logoutBtn = document.getElementById("logoutBtn");
-    const starredUpdateBadge = document.getElementById("starredUpdateBadge");
-    const createdUpdateBadge = document.getElementById("createdUpdateBadge");
+    const starredCount = document.getElementById("starredCount");
+    const createdCount = document.getElementById("createdCount");
+    const registeredCount = document.getElementById("registeredCount");
 
     let lastVisitTime = localStorage.getItem('lastDashboardVisit') || new Date().toISOString();
 
@@ -231,18 +311,38 @@
         return;
       }
 
-      // Load starred events with full event data
-      const starredIds = await getStarred(user.uid);
-      await renderStarredEvents(starredIds);
+      console.log("Loading dashboard for user:", user.uid);
 
-      // Load created events
-      const q = query(collection(db, "events"), where("creatorId", "==", user.uid));
-      const snap = await getDocs(q);
-      await renderCreatedEvents(snap.docs);
+      // Load all data
+      await loadDashboardData(user.uid);
 
       // Update last visit time
       localStorage.setItem('lastDashboardVisit', new Date().toISOString());
     });
+
+    async function loadDashboardData(userId) {
+      try {
+        // Load starred events
+        const starredIds = await getStarred(userId);
+        starredCount.textContent = starredIds.length;
+        await renderStarredEvents(starredIds);
+
+        // Load created events
+        const createdQuery = query(collection(db, "events"), where("creatorId", "==", userId));
+        const createdSnap = await getDocs(createdQuery);
+        createdCount.textContent = createdSnap.size;
+        await renderCreatedEvents(createdSnap.docs);
+
+        // Load registrations
+        const registrationsQuery = query(collection(db, "registrations"), where("studentEmail", "==", auth.currentUser.email));
+        const registrationsSnap = await getDocs(registrationsQuery);
+        registeredCount.textContent = registrationsSnap.size;
+        await renderRegisteredEvents(registrationsSnap.docs);
+
+      } catch (error) {
+        console.error("Error loading dashboard data:", error);
+      }
+    }
 
     async function renderStarredEvents(starredIds) {
       starredContainer.innerHTML = "";
@@ -261,42 +361,12 @@
         return;
       }
 
-      let hasUpdates = false;
-
       for (const eventId of starredIds) {
         const eventDoc = await getDoc(doc(db, "events", eventId));
         if (eventDoc.exists()) {
           const event = eventDoc.data();
-          const eventDate = event.date?.toDate ? event.date.toDate() : new Date(event.date);
-          const lastVisit = new Date(lastVisitTime);
-          const isUpdated = eventDate > lastVisit;
-
-          if (isUpdated) hasUpdates = true;
-
-          starredContainer.innerHTML += `
-            <div class="col-md-6 col-lg-4">
-              <div class="card event-card">
-                <img src="${event.imageUrl || 'https://picsum.photos/400/250'}" class="card-img-top" alt="${event.title}">
-                <div class="card-body d-flex flex-column">
-                  <h5 class="card-title">${event.title}</h5>
-                  <p class="card-text">${event.description || "No description available."}</p>
-                  <div class="event-meta">
-                    <small><i class="far fa-calendar"></i> ${eventDate.toLocaleDateString()}</small><br>
-                    <small><i class="far fa-clock"></i> ${eventDate.toLocaleTimeString()}</small>
-                  </div>
-                  <div class="mt-auto">
-                    ${isUpdated ? '<span class="update-badge">New Update!</span>' : ''}
-                    <a href="register.html?eventId=${eventId}&title=${encodeURIComponent(event.title)}" class="btn btn-view w-100">View Details</a>
-                  </div>
-                </div>
-              </div>
-            </div>
-          `;
+          renderEventCard(event, eventId, starredContainer);
         }
-      }
-
-      if (hasUpdates) {
-        starredUpdateBadge.classList.remove('d-none');
       }
     }
 
@@ -317,41 +387,68 @@
         return;
       }
 
-      let hasUpdates = false;
-
       createdDocs.forEach((docSnap) => {
         const event = docSnap.data();
-        const eventId = docSnap.id;
-        const eventDate = event.date?.toDate ? event.date.toDate() : new Date(event.date);
-        const lastVisit = new Date(lastVisitTime);
-        const isUpdated = event.createdAt?.toDate ? event.createdAt.toDate() > lastVisit : false;
+        renderEventCard(event, docSnap.id, createdContainer, true);
+      });
+    }
 
-        if (isUpdated) hasUpdates = true;
-
-        createdContainer.innerHTML += `
-          <div class="col-md-6 col-lg-4">
-            <div class="card event-card">
-              <img src="${event.imageUrl || 'https://picsum.photos/400/250'}" class="card-img-top" alt="${event.title}">
-              <div class="card-body d-flex flex-column">
-                <h5 class="card-title">${event.title}</h5>
-                <p class="card-text">${event.description || "No description available."}</p>
-                <div class="event-meta">
-                  <small><i class="far fa-calendar"></i> ${eventDate.toLocaleDateString()}</small><br>
-                  <small><i class="far fa-clock"></i> ${eventDate.toLocaleTimeString()}</small>
-                </div>
-                <div class="mt-auto">
-                  ${isUpdated ? '<span class="update-badge">Recently Added</span>' : ''}
-                  <a href="register.html?eventId=${eventId}&title=${encodeURIComponent(event.title)}" class="btn btn-view w-100">Manage Event</a>
-                </div>
-              </div>
+    async function renderRegisteredEvents(registrationDocs) {
+      registeredContainer.innerHTML = "";
+      
+      if (registrationDocs.length === 0) {
+        registeredContainer.innerHTML = `
+          <div class="col-12">
+            <div class="empty-state">
+              <i class="far fa-clipboard"></i>
+              <h4>No Registrations</h4>
+              <p>Register for events to see them here!</p>
+              <a href="index.html" class="btn btn-view">Browse Events</a>
             </div>
           </div>
         `;
-      });
-
-      if (hasUpdates) {
-        createdUpdateBadge.classList.remove('d-none');
+        return;
       }
+
+      for (const docSnap of registrationDocs) {
+        const registration = docSnap.data();
+        const eventDoc = await getDoc(doc(db, "events", registration.eventId));
+        if (eventDoc.exists()) {
+          const event = eventDoc.data();
+          renderEventCard(event, registration.eventId, registeredContainer, false, registration);
+        }
+      }
+    }
+
+    function renderEventCard(event, eventId, container, isCreated = false, registration = null) {
+      const eventDate = event.date?.toDate ? event.date.toDate() : new Date(event.date);
+      const now = new Date();
+      const isPastEvent = eventDate < now;
+
+      const card = `
+        <div class="col-md-6 col-lg-4">
+          <div class="card event-card">
+            <img src="${event.imageUrl || 'https://picsum.photos/400/250'}" class="card-img-top" alt="${event.title}">
+            <div class="card-body d-flex flex-column">
+              <h5 class="card-title">${event.title}</h5>
+              <p class="card-text">${event.description || "No description available."}</p>
+              <div class="event-meta">
+                <small><i class="far fa-calendar"></i> ${eventDate.toLocaleDateString()}</small><br>
+                <small><i class="far fa-clock"></i> ${eventDate.toLocaleTimeString()}</small>
+                ${event.location ? `<br><small><i class="fas fa-map-marker-alt"></i> ${event.location}</small>` : ''}
+                ${registration ? `<br><small><i class="fas fa-user-check"></i> Registered on ${new Date(registration.registeredAt?.toDate()).toLocaleDateString()}</small>` : ''}
+              </div>
+              <div class="mt-auto pt-3">
+                ${isPastEvent && !isCreated ? 
+                  `<a href="feedback.html?eventId=${eventId}&title=${encodeURIComponent(event.title)}" class="btn btn-view w-100">Give Feedback</a>` :
+                  `<a href="register.html?eventId=${eventId}&title=${encodeURIComponent(event.title)}" class="btn btn-view w-100">${isCreated ? 'Manage Event' : 'View Details'}</a>`
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      container.innerHTML += card;
     }
   </script>
 </body>
