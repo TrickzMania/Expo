@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Event Registrations</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  
+  <style>
+    :root {
+      --dark-blue: #1a237e;
+      --light-gray: #f0f2f5;
+      --primary-gradient: linear-gradient(135deg, #1a237e, #4a148c);
+    }
+    
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: var(--light-gray);
+      padding-top: 5rem;
+    }
+
+    .navbar {
+      background-color: var(--dark-blue) !important;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      position: fixed;
+      width: 100%;
+      top: 0;
+      z-index: 1030;
+    }
+
+    .header-section {
+      background: var(--primary-gradient);
+      color: white;
+      padding: 3rem 0;
+      border-bottom-left-radius: 60px;
+      border-bottom-right-radius: 60px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      margin-bottom: 3rem;
+    }
+
+    .registrations-card {
+      background: #fff;
+      border-radius: 1.5rem;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      padding: 2.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .registration-item {
+      border: 1px solid #e9ecef;
+      border-radius: 1rem;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      transition: all 0.3s ease;
+      background: #fff;
+    }
+
+    .registration-item:hover {
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      transform: translateY(-2px);
+    }
+
+    .registration-header {
+      display: flex;
+      justify-content: between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .registration-basic {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+    }
+
+    .registration-details {
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid #e9ecef;
+      display: none;
+    }
+
+    .registration-details.show {
+      display: block;
+    }
+
+    .btn-expand {
+      background: none;
+      border: 2px solid var(--dark-blue);
+      color: var(--dark-blue);
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 1.2rem;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .btn-expand:hover {
+      background: var(--dark-blue);
+      color: white;
+      transform: scale(1.1);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 3rem;
+      color: #666;
+    }
+
+    .empty-state i {
+      font-size: 3rem;
+      color: #ccc;
+      margin-bottom: 1rem;
+    }
+
+    .stats-card {
+      background: white;
+      border-radius: 1rem;
+      padding: 1.5rem;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+      text-align: center;
+      border-left: 4px solid var(--dark-blue);
+      margin-bottom: 2rem;
+    }
+
+    .stats-number {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--dark-blue);
+      margin-bottom: 0.5rem;
+    }
+
+    .stats-label {
+      color: #666;
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar navbar-dark bg-dark">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="index.html">📅 Event Tracker</a>
+      <div class="d-flex">
+        <a href="dashboard.html" class="btn btn-outline-light btn-sm me-2">Dashboard</a>
+        <a href="index.html" class="btn btn-outline-light btn-sm">Home</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="header-section">
+    <div class="container">
+      <h1 class="display-5 fw-bold" id="eventTitle">Event Registrations</h1>
+      <p class="lead mb-0" id="eventSubtitle">View all registrations for this event</p>
+    </div>
+  </div>
+
+  <div class="container my-5">
+    <!-- Registration Stats -->
+    <div class="row">
+      <div class="col-md-4">
+        <div class="stats-card">
+          <div class="stats-number" id="totalRegistrations">0</div>
+          <div class="stats-label">Total Registrations</div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="stats-card">
+          <div class="stats-number" id="latestRegistration">-</div>
+          <div class="stats-label">Latest Registration</div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="stats-card">
+          <div class="stats-number" id="registrationsToday">0</div>
+          <div class="stats-label">Registered Today</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Registrations List -->
+    <div class="registrations-card">
+      <h3 class="mb-4">
+        <i class="fas fa-users me-2"></i>Registered Participants
+      </h3>
+      <div id="registrationsContainer">
+        <div class="text-center">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading registrations...</span>
+          </div>
+          <p class="mt-2 text-muted">Loading registrations...</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+    import { getFirestore, collection, getDocs, query, where, orderBy } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyD2iuNpJI0p1TSA_MdJ-9SNuE6QqeZJRt8",
+      authDomain: "lostandfound-f64d1.firebaseapp.com",
+      projectId: "lostandfound-f64d1",
+      storageBucket: "lostandfound-f64d1.appspot.com",
+      messagingSenderId: "226765931514",
+      appId: "1:226765931514:web:4b3ba5d6288e0273c05a43"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    const params = new URLSearchParams(window.location.search);
+    const eventId = params.get("eventId");
+    const eventTitle = params.get("title");
+
+    // Update page title
+    if (eventTitle) {
+      document.getElementById("eventTitle").textContent = `Registrations: ${decodeURIComponent(eventTitle)}`;
+      document.getElementById("eventSubtitle").textContent = `View all registrations for "${decodeURIComponent(eventTitle)}"`;
+    }
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        window.location.href = "index.html";
+        return;
+      }
+      await loadRegistrations();
+    });
+
+    async function loadRegistrations() {
+      if (!eventId) {
+        document.getElementById("registrationsContainer").innerHTML = `
+          <div class="empty-state">
+            <i class="fas fa-exclamation-triangle"></i>
+            <h4>No Event Specified</h4>
+            <p>Please go back to dashboard and select an event.</p>
+            <a href="dashboard.html" class="btn btn-primary">Go to Dashboard</a>
+          </div>
+        `;
+        return;
+      }
+
+      try {
+        // Query registrations for this event
+        const registrationsQuery = query(
+          collection(db, "registrations"), 
+          where("eventId", "==", eventId),
+          orderBy("registeredAt", "desc")
+        );
+        
+        const registrationsSnap = await getDocs(registrationsQuery);
+        const registrations = [];
+        
+        registrationsSnap.forEach(doc => {
+          const data = doc.data();
+          registrations.push({
+            id: doc.id,
+            ...data,
+            registeredAt: data.registeredAt?.toDate ? data.registeredAt.toDate() : new Date(data.registeredAt)
+          });
+        });
+
+        // Update stats
+        document.getElementById("totalRegistrations").textContent = registrations.length;
+        
+        if (registrations.length > 0) {
+          const latest = registrations[0];
+          document.getElementById("latestRegistration").textContent = latest.registeredAt.toLocaleDateString();
+          
+          // Count registrations from today
+          const today = new Date();
+          const todayRegistrations = registrations.filter(reg => 
+            reg.registeredAt.toDateString() === today.toDateString()
+          );
+          document.getElementById("registrationsToday").textContent = todayRegistrations.length;
+        }
+
+        // Render registrations
+        renderRegistrations(registrations);
+
+      } catch (error) {
+        console.error("Error loading registrations:", error);
+        document.getElementById("registrationsContainer").innerHTML = `
+          <div class="empty-state">
+            <i class="fas fa-exclamation-triangle"></i>
+            <h4>Error Loading Registrations</h4>
+            <p>Please try again later.</p>
+          </div>
+        `;
+      }
+    }
+
+    function renderRegistrations(registrations) {
+      const container = document.getElementById("registrationsContainer");
+      
+      if (registrations.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <i class="fas fa-users-slash"></i>
+            <h4>No Registrations Yet</h4>
+            <p>No one has registered for this event yet.</p>
+          </div>
+        `;
+        return;
+      }
+
+      let html = '';
+      registrations.forEach((reg, index) => {
+        html += `
+          <div class="registration-item">
+            <div class="registration-header">
+              <div class="registration-basic">
+                <div>
+                  <h6 class="mb-1 fw-bold">${reg.studentName}</h6>
+                  <p class="mb-0 text-muted small">
+                    <i class="fas fa-phone me-1"></i>${reg.studentPhone}
+                  </p>
+                </div>
+                <button class="btn-expand" onclick="toggleDetails(${index})" title="View full details">
+                  V
+                </button>
+              </div>
+            </div>
+            <div class="registration-details" id="details-${index}">
+              <div class="row">
+                <div class="col-md-6">
+                  <p class="mb-1"><strong>Email:</strong> ${reg.studentEmail}</p>
+                  <p class="mb-1"><strong>Department:</strong> ${reg.studentDept}</p>
+                </div>
+                <div class="col-md-6">
+                  <p class="mb-1"><strong>Semester:</strong> ${reg.studentSemester}</p>
+                  <p class="mb-1"><strong>Registered:</strong> ${reg.registeredAt.toLocaleString()}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+    }
+
+    // Global function for toggling details
+    window.toggleDetails = function(index) {
+      const details = document.getElementById(`details-${index}`);
+      const button = event.currentTarget;
+      
+      if (details.classList.contains('show')) {
+        details.classList.remove('show');
+        button.textContent = 'V';
+        button.title = 'View full details';
+      } else {
+        details.classList.add('show');
+        button.textContent = '▲';
+        button.title = 'Hide details';
+      }
+    };
+  </script>
+</body>
+</html>
