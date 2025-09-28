@@ -332,6 +332,39 @@
   }
 }
 
+
+// Add this function to map.html for debugging
+async function debugRegistrations(user) {
+  console.log("=== DEBUG REGISTRATIONS ===");
+  console.log("User email:", user.email);
+  
+  const registrationsQuery = query(
+    collection(db, "registrations"), 
+    where("studentEmail", "==", user.email)
+  );
+  
+  const registrationsSnap = await getDocs(registrationsQuery);
+  console.log("Total registrations found:", registrationsSnap.size);
+  
+  registrationsSnap.forEach(doc => {
+    console.log("Registration:", doc.data());
+  });
+  console.log("=== END DEBUG ===");
+}
+
+// Call it in onAuthStateChanged
+onAuthStateChanged(auth, async (user) => {
+  if (!user) {
+    window.location.href = "index.html";
+    return;
+  }
+  
+  // Debug first
+  await debugRegistrations(user);
+  
+  // Then load schedule
+  await loadEventSchedule(user);
+});
     function renderTimeline(events) {
       const container = document.getElementById("timelineContainer");
       
