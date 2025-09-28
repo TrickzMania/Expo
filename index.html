@@ -37,18 +37,19 @@
     }
     /* Navbar Alignment */
     .navbar-collapse {
-      justify-content: flex-end; /* Pushes content to the right */
+      justify-content: flex-end;
     }
     .navbar-nav {
-      align-items: center; /* Vertically align items like buttons and links */
+      align-items: center;
     }
     .navbar-nav .nav-item {
-      margin-left: 1rem; /* Space between nav items */
+      margin-left: 1rem;
     }
     .navbar-nav .btn {
-      margin-left: 1rem !important; /* Space for buttons */
+      margin-left: 1rem !important;
     }
 
+    /* --- HERO SECTION STYLES WITH BUBBLES --- */
     .hero-section {
       background: var(--primary-gradient);
       color: white;
@@ -56,11 +57,89 @@
       border-bottom-left-radius: 60px;
       border-bottom-right-radius: 60px;
       box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      position: relative; /* Needed for absolute bubbles */
+      overflow: hidden; /* Clips bubbles at the edges */
+      z-index: 1;
+    }
+    .hero-section .container {
+        position: relative;
+        z-index: 2; /* Ensures content is above bubbles */
     }
     .hero-section .display-4 {
       font-weight: 700;
       font-size: 3.5rem;
     }
+    
+    /* --- BUBBLE CSS --- */
+    .bubbles {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+    }
+    .bubbles li {
+        position: absolute;
+        list-style: none;
+        display: block;
+        width: 40px;
+        height: 40px;
+        background: rgba(255, 255, 255, 0.15);
+        animation: animateBubble 25s linear infinite;
+        bottom: -150px;
+        border-radius: 50%;
+    }
+    .bubbles li:nth-child(1) {
+        left: 25%;
+        width: 80px;
+        height: 80px;
+        animation-delay: 0s;
+    }
+    .bubbles li:nth-child(2) {
+        left: 10%;
+        width: 20px;
+        height: 20px;
+        animation-delay: 2s;
+        animation-duration: 12s;
+    }
+    .bubbles li:nth-child(3) {
+        left: 70%;
+        width: 20px;
+        height: 20px;
+        animation-delay: 4s;
+    }
+    .bubbles li:nth-child(4) {
+        left: 40%;
+        width: 60px;
+        height: 60px;
+        animation-delay: 0s;
+        animation-duration: 18s;
+    }
+    .bubbles li:nth-child(5) {
+        left: 65%;
+        width: 20px;
+        height: 20px;
+        animation-delay: 0s;
+    }
+    .bubbles li:nth-child(6) {
+        left: 80%;
+        width: 120px;
+        height: 120px;
+        animation-delay: 3s;
+    }
+    .bubbles li:nth-child(7) {
+        left: 50%;
+        width: 150px;
+        height: 150px;
+        animation-delay: 7s;
+    }
+
+    @keyframes animateBubble {
+        0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+        100% { transform: translateY(-1000px) rotate(720deg); opacity: 0; }
+    }
+    /* --- END BUBBLE CSS --- */
+    
     .btn-gradient {
       background: var(--secondary-gradient);
       border: none;
@@ -77,7 +156,6 @@
       transform: translateY(-3px);
       box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
     }
-    /* New styles for professional login/logout buttons in navbar */
     .btn-nav-login {
       background: var(--secondary-gradient);
       border: none;
@@ -93,10 +171,10 @@
       background-position: right center;
       transform: translateY(-1px);
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-      color: white; /* Keep text white on hover */
+      color: white;
     }
     .btn-nav-logout {
-      background-color: #dc3545; /* Bootstrap danger color */
+      background-color: #dc3545;
       border: none;
       color: white;
       border-radius: 50px;
@@ -106,12 +184,11 @@
       transition: all 0.3s ease;
     }
     .btn-nav-logout:hover {
-      background-color: #c82333; /* Darker danger on hover */
+      background-color: #c82333;
       transform: translateY(-1px);
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-      color: white; /* Keep text white on hover */
+      color: white;
     }
-
     .card {
       border-radius: 1.25rem;
       transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -215,11 +292,11 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding-top: 0.5rem; /* Add some space above the buttons */
+      padding-top: 0.5rem;
     }
     .card-footer-actions .btn {
-      flex-grow: 1; /* Allow button to grow */
-      margin-right: 0.5rem; /* Space between button and star */
+      flex-grow: 1;
+      margin-right: 0.5rem;
     }
     .card-footer-actions .btn:last-child {
       margin-right: 0;
@@ -285,6 +362,16 @@
   </nav>
 
   <div class="hero-section text-center">
+    <ul class="bubbles">
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+    </ul>
+    
     <div class="container">
       <h1 class="display-4">Smart Campus Event Tracker</h1>
       <p class="lead">Stay updated with the latest campus events.</p>
@@ -344,8 +431,8 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-    import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+    import { getFirestore, collection, getDocs, query, orderBy, where } 
+      from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
     import { initAuth, login, logout } from "./auth.js";
     import { toggleStar, getStarred } from "./userData.js";
 
@@ -360,42 +447,10 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    const auth = getAuth(app);
-
-    async function cleanupExpiredEvents() {
-      try {
-        console.log("🔄 Checking for expired events...");
-        const now = new Date();
-        const tenMinutesAgo = new Date(now.getTime() - 10 * 60 * 1000);
-        
-        const eventsSnapshot = await getDocs(collection(db, 'events'));
-        const deletePromises = [];
-        
-        eventsSnapshot.forEach(doc => {
-          const event = doc.data();
-          const eventDate = event.date?.toDate ? event.date.toDate() : new Date(event.date);
-          const eventEnd = new Date(eventDate.getTime() + (event.duration || 60) * 60000);
-          
-          if (eventEnd <= tenMinutesAgo) {
-            console.log(`🗑️ Deleting expired event: ${event.title}`);
-            deletePromises.push(deleteDoc(doc.ref));
-          }
-        });
-        
-        if (deletePromises.length > 0) {
-          await Promise.all(deletePromises);
-          console.log(`✅ Cleaned up ${deletePromises.length} expired events`);
-        }
-      } catch (error) {
-        console.error('❌ Cleanup error:', error);
-      }
-    }
-
     const eventsContainer = document.getElementById("eventsContainer");
     const loginBtn = document.getElementById("loginBtn");
     const logoutBtn = document.getElementById("logoutBtn");
     const liveNotified = new Set();
-
     let user = null;
     let starredEvents = [];
     let allEvents = [];
@@ -423,21 +478,12 @@
     function getEventStatus(eventDate, duration) {
       const now = new Date();
       const start = new Date(eventDate);
-      const end = new Date(start.getTime() + (duration || 60) * 60000); // Default 60 min if not specified
-      
-      console.log("Event timing check:", {
-        now: now.toLocaleString(),
-        start: start.toLocaleString(), 
-        end: end.toLocaleString(),
-        isFuture: start > now,
-        isLive: now >= start && now <= end,
-        isPast: now > end
-      });
+      const end = new Date(start.getTime() + duration * 60000);
+      const diff = Math.floor((start - now) / 60000);
 
       if (now >= start && now <= end) {
         return { status: "🔴 Live Now", badgeClass: "badge-live", isLive: true, isEnded: false };
       } else if (start > now) {
-        // Event is in future
         const hoursUntil = (start - now) / (1000 * 60 * 60);
         if (hoursUntil <= 24) {
           return { status: "⏳ Starts Soon", badgeClass: "badge-starts-soon", isLive: false, isEnded: false };
@@ -445,7 +491,7 @@
           return { status: "📌 Upcoming", badgeClass: "badge-upcoming", isLive: false, isEnded: false };
         }
       } else {
-        return { status: "Event Ended", badgeClass: "bg-secondary", isLive: false, isEnded: true };
+        return { status: "Event Ended", badgeClass: "bg-dark", isLive: false, isEnded: true };
       }
     }
 
@@ -554,7 +600,6 @@ document.querySelectorAll(".star-btn").forEach(btn => {
       btn.style.transform = "scale(1.2)";
       
       const newState = await toggleStar(user.uid, eventId);
-      console.log("Star toggle result:", newState);
       
       // Update UI
       if (newState) {
@@ -567,15 +612,6 @@ document.querySelectorAll(".star-btn").forEach(btn => {
         icon.classList.remove('fas');
         icon.classList.add('far');
         btn.title = "Star event";
-      }
-      
-      // Update starredEvents array
-      if (newState) {
-        if (!starredEvents.includes(eventId)) {
-          starredEvents.push(eventId);
-        }
-      } else {
-        starredEvents = starredEvents.filter(id => id !== eventId);
       }
       
       // Reset animation
@@ -592,34 +628,17 @@ document.querySelectorAll(".star-btn").forEach(btn => {
     }
 
     // Load events from Firestore
-async function loadEvents() {
-  try {
-    // 🔧 Add this line - clean up expired events first
-    await cleanupExpiredEvents();
-    
-    // Your existing event loading code continues unchanged
-    const q = query(collection(db, "events"), orderBy("date", "desc"));
-    const querySnapshot = await getDocs(q);
-    allEvents = [];
-    querySnapshot.forEach((doc) => {
-      const data = doc.data();
-      const eventDate = data.date?.toDate ? data.date.toDate() : new Date(data.date);
-      allEvents.push({ id: doc.id, ...data, date: eventDate });
-    });
-    renderEvents(allEvents);
-  } catch (error) {
-    // Your existing error handling
-    console.error("Error loading events:", error);
-    eventsContainer.innerHTML = `
-      <div class="col-12 text-center">
-        <div class="alert alert-danger">
-          <i class="fas fa-exclamation-triangle"></i>
-          Failed to load events. Please check your connection.
-        </div>
-      </div>
-    `;
-  }
-}
+    async function loadEvents() {
+      const q = query(collection(db, "events"), orderBy("date", "desc"));
+      const querySnapshot = await getDocs(q);
+      allEvents = [];
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        const eventDate = data.date?.toDate ? data.date.toDate() : new Date(data.date);
+        allEvents.push({ id: doc.id, ...data, date: eventDate });
+      });
+      renderEvents(allEvents);
+    }
 
     // Search Function
     document.getElementById("searchInput").addEventListener("input", function () {
