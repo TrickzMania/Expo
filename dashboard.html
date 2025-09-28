@@ -290,196 +290,238 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-    import { getFirestore, collection, getDocs, query, where, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
-    import { getStarred } from "./userData.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+  import { getFirestore, collection, getDocs, query, where, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+  import { getStarred } from "./userData.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyD2iuNpJI0p1TSA_MdJ-9SNuE6QqeZJRt8",
-      authDomain: "lostandfound-f64d1.firebaseapp.com",
-      projectId: "lostandfound-f64d1",
-      storageBucket: "lostandfound-f64d1.appspot.com",
-      messagingSenderId: "226765931514",
-      appId: "1:226765931514:web:4b3ba5d6288e0273c05a43"
-    };
+  const firebaseConfig = {
+    apiKey: "AIzaSyD2iuNpJI0p1TSA_MdJ-9SNuE6QqeZJRt8",
+    authDomain: "lostandfound-f64d1.firebaseapp.com",
+    projectId: "lostandfound-f64d1",
+    storageBucket: "lostandfound-f64d1.appspot.com",
+    messagingSenderId: "226765931514",
+    appId: "1:226765931514:web:4b3ba5d6288e0273c05a43"
+  };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const auth = getAuth(app);
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const auth = getAuth(app);
 
-    const starredContainer = document.getElementById("starredContainer");
-    const createdContainer = document.getElementById("createdContainer");
-    const registeredContainer = document.getElementById("registeredContainer");
-    const logoutBtn = document.getElementById("logoutBtn");
-    const starredCount = document.getElementById("starredCount");
-    const createdCount = document.getElementById("createdCount");
-    const registeredCount = document.getElementById("registeredCount");
+  const starredContainer = document.getElementById("starredContainer");
+  const createdContainer = document.getElementById("createdContainer");
+  const registeredContainer = document.getElementById("registeredContainer");
+  const logoutBtn = document.getElementById("logoutBtn");
+  const starredCount = document.getElementById("starredCount");
+  const createdCount = document.getElementById("createdCount");
+  const registeredCount = document.getElementById("registeredCount");
 
-    logoutBtn.addEventListener("click", () => {
-      signOut(auth);
+  logoutBtn.addEventListener("click", () => {
+    signOut(auth);
+    window.location.href = "index.html";
+  });
+
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) {
       window.location.href = "index.html";
-    });
-
-    onAuthStateChanged(auth, async (user) => {
-      if (!user) {
-        window.location.href = "index.html";
-        return;
-      }
-
-      console.log("Loading dashboard for user:", user.uid);
-      await loadDashboardData(user.uid);
-    });
-
-    async function loadDashboardData(userId) {
-      try {
-        // Load starred events
-        const starredIds = await getStarred(userId);
-        starredCount.textContent = starredIds.length;
-        await renderStarredEvents(starredIds);
-
-        // Load created events
-        const createdQuery = query(collection(db, "events"), where("creatorId", "==", userId));
-        const createdSnap = await getDocs(createdQuery);
-        createdCount.textContent = createdSnap.size;
-        await renderCreatedEvents(createdSnap.docs);
-
-        // Load registrations
-        const registrationsQuery = query(collection(db, "registrations"), where("studentEmail", "==", auth.currentUser.email));
-        const registrationsSnap = await getDocs(registrationsQuery);
-        registeredCount.textContent = registrationsSnap.size;
-        await renderRegisteredEvents(registrationsSnap.docs);
-
-      } catch (error) {
-        console.error("Error loading dashboard data:", error);
-      }
+      return;
     }
 
-    async function renderStarredEvents(starredIds) {
-      starredContainer.innerHTML = "";
+    console.log("Loading dashboard for user:", user.uid);
+    await loadDashboardData(user.uid);
+  });
+
+  async function loadDashboardData(userId) {
+    try {
+      // Load starred events
+      const starredIds = await getStarred(userId);
+      starredCount.textContent = starredIds.length;
+      await renderStarredEvents(starredIds);
+
+      // Load created events
+      const createdQuery = query(collection(db, "events"), where("creatorId", "==", userId));
+      const createdSnap = await getDocs(createdQuery);
+      createdCount.textContent = createdSnap.size;
+      await renderCreatedEvents(createdSnap.docs);
+
+      // Load registrations
+      const registrationsQuery = query(collection(db, "registrations"), where("studentEmail", "==", auth.currentUser.email));
+      const registrationsSnap = await getDocs(registrationsQuery);
+      registeredCount.textContent = registrationsSnap.size;
+      await renderRegisteredEvents(registrationsSnap.docs);
+
+    } catch (error) {
+      console.error("Error loading dashboard data:", error);
+    }
+  }
+
+  async function renderStarredEvents(starredIds) {
+    starredContainer.innerHTML = "";
+    
+    if (starredIds.length === 0) {
+      starredContainer.innerHTML = `
+        <div class="col-12">
+          <div class="empty-state">
+            <i class="far fa-star"></i>
+            <h4>No Starred Events</h4>
+            <p>Star events you're interested in to see them here!</p>
+            <a href="index.html" class="btn btn-view">Browse Events</a>
+          </div>
+        </div>
+      `;
+      return;
+    }
+
+    for (const eventId of starredIds) {
+      const eventDoc = await getDoc(doc(db, "events", eventId));
+      if (eventDoc.exists()) {
+        const event = eventDoc.data();
+        renderEventCard(event, eventId, starredContainer, false, false);
+      }
+    }
+  }
+
+  async function renderCreatedEvents(createdDocs) {
+    createdContainer.innerHTML = "";
+    
+    if (createdDocs.length === 0) {
+      createdContainer.innerHTML = `
+        <div class="col-12">
+          <div class="empty-state">
+            <i class="far fa-calendar-plus"></i>
+            <h4>No Created Events</h4>
+            <p>Create your first event to get started!</p>
+            <a href="post.html" class="btn btn-view">Create Event</a>
+          </div>
+        </div>
+      `;
+      return;
+    }
+
+    createdDocs.forEach((docSnap) => {
+      const event = docSnap.data();
+      renderEventCard(event, docSnap.id, createdContainer, true, false);
+    });
+  }
+
+  async function renderRegisteredEvents(registrationDocs) {
+    registeredContainer.innerHTML = "";
+    
+    if (registrationDocs.length === 0) {
+      registeredContainer.innerHTML = `
+        <div class="col-12">
+          <div class="empty-state">
+            <i class="far fa-clipboard"></i>
+            <h4>No Registrations</h4>
+            <p>Register for events to see them here!</p>
+            <a href="index.html" class="btn btn-view">Browse Events</a>
+          </div>
+        </div>
+      `;
+      return;
+    }
+
+    for (const docSnap of registrationDocs) {
+      const registration = docSnap.data();
+      const eventDoc = await getDoc(doc(db, "events", registration.eventId));
       
-      if (starredIds.length === 0) {
-        starredContainer.innerHTML = `
-          <div class="col-12">
-            <div class="empty-state">
-              <i class="far fa-star"></i>
-              <h4>No Starred Events</h4>
-              <p>Star events you're interested in to see them here!</p>
-              <a href="index.html" class="btn btn-view">Browse Events</a>
+      if (eventDoc.exists()) {
+        const event = eventDoc.data();
+        
+        // Check if this registration is approved
+        const approvalQuery = query(
+          collection(db, "approvals"),
+          where("eventId", "==", registration.eventId),
+          where("studentEmail", "==", registration.studentEmail)
+        );
+        const approvalSnap = await getDocs(approvalQuery);
+        const isApproved = !approvalSnap.empty;
+        
+        renderRegisteredEventCard(event, registration.eventId, registeredContainer, registration, isApproved);
+      }
+    }
+  }
+
+  // Define renderEventCard function
+  function renderEventCard(event, eventId, container, isCreated = false, registration = null) {
+    const eventDate = event.date?.toDate ? event.date.toDate() : new Date(event.date);
+    const now = new Date();
+    const isPastEvent = eventDate < now;
+
+    const card = `
+      <div class="col-md-6 col-lg-4">
+        <div class="card event-card">
+          <img src="${event.imageUrl || 'https://picsum.photos/400/250'}" class="card-img-top" alt="${event.title}">
+          <div class="card-body d-flex flex-column">
+            <h5 class="card-title">${event.title}</h5>
+            <p class="card-text">${event.description || "No description available."}</p>
+            <div class="event-meta">
+              <small><i class="far fa-calendar"></i> ${eventDate.toLocaleDateString()}</small><br>
+              <small><i class="far fa-clock"></i> ${eventDate.toLocaleTimeString()}</small>
+              ${event.location ? `<br><small><i class="fas fa-map-marker-alt"></i> ${event.location}</small>` : ''}
+              ${registration ? `<br><small><i class="fas fa-user-check"></i> Registered on ${new Date(registration.registeredAt?.toDate()).toLocaleDateString()}</small>` : ''}
+            </div>
+            <div class="mt-auto pt-3">
+              ${isCreated ? 
+                `<div class="d-flex">
+                  <a href="update-event.html?eventId=${eventId}" class="btn btn-edit">
+                    <i class="fas fa-edit me-1"></i> Update Event
+                  </a>
+                  <a href="registrations.html?eventId=${eventId}&title=${encodeURIComponent(event.title)}" class="btn btn-view">
+                    <i class="fas fa-users me-1"></i> View Registrations
+                  </a>
+                </div>` :
+                isPastEvent && !isCreated ? 
+                `<a href="feedback.html?eventId=${eventId}&title=${encodeURIComponent(event.title)}" class="btn btn-view w-100">Give Feedback</a>` :
+                `<a href="register.html?eventId=${eventId}&title=${encodeURIComponent(event.title)}" class="btn btn-view w-100">View Details</a>`
+              }
             </div>
           </div>
-        `;
-        return;
-      }
-
-      for (const eventId of starredIds) {
-        const eventDoc = await getDoc(doc(db, "events", eventId));
-        if (eventDoc.exists()) {
-          const event = eventDoc.data();
-          renderEventCard(event, eventId, starredContainer, false, false);
-        }
-      }
-    }
-
-    async function renderCreatedEvents(createdDocs) {
-      createdContainer.innerHTML = "";
-      
-      if (createdDocs.length === 0) {
-        createdContainer.innerHTML = `
-          <div class="col-12">
-            <div class="empty-state">
-              <i class="far fa-calendar-plus"></i>
-              <h4>No Created Events</h4>
-              <p>Create your first event to get started!</p>
-              <a href="post.html" class="btn btn-view">Create Event</a>
-            </div>
-          </div>
-        `;
-        return;
-      }
-
-      createdDocs.forEach((docSnap) => {
-        const event = docSnap.data();
-        renderEventCard(event, docSnap.id, createdContainer, true, false);
-      });
-    }
-
-    async function renderRegisteredEvents(registrationDocs) {
-  registeredContainer.innerHTML = "";
-  
-  if (registrationDocs.length === 0) {
-    registeredContainer.innerHTML = `
-      <div class="col-12">
-        <div class="empty-state">
-          <i class="far fa-clipboard"></i>
-          <h4>No Registrations</h4>
-          <p>Register for events to see them here!</p>
-          <a href="index.html" class="btn btn-view">Browse Events</a>
         </div>
       </div>
     `;
-    return;
+    container.innerHTML += card;
   }
 
-  for (const docSnap of registrationDocs) {
-    const registration = docSnap.data();
-    const eventDoc = await getDoc(doc(db, "events", registration.eventId));
-    
-    if (eventDoc.exists()) {
-      const event = eventDoc.data();
-      
-      // Check if this registration is approved
-      const approvalQuery = query(
-        collection(db, "approvals"),
-        where("eventId", "==", registration.eventId),
-        where("studentEmail", "==", registration.studentEmail)
-      );
-      const approvalSnap = await getDocs(approvalQuery);
-      const isApproved = !approvalSnap.empty;
-      
-      renderRegisteredEventCard(event, registration.eventId, registeredContainer, registration, isApproved);
-    }
-  }
-}
+  // Define renderRegisteredEventCard function
+  function renderRegisteredEventCard(event, eventId, container, registration, isApproved) {
+    const eventDate = event.date?.toDate ? event.date.toDate() : new Date(event.date);
+    const now = new Date();
+    const isPastEvent = eventDate < now;
 
-function renderRegisteredEventCard(event, eventId, container, registration, isApproved) {
-  const eventDate = event.date?.toDate ? event.date.toDate() : new Date(event.date);
-  const now = new Date();
-  const isPastEvent = eventDate < now;
-
-  const card = `
-    <div class="col-md-6 col-lg-4">
-      <div class="card event-card ${isApproved ? 'border-success' : ''}">
-        <div class="card-header bg-transparent ${isApproved ? 'border-success' : ''}">
-          <div class="d-flex justify-content-between align-items-center">
-            <h6 class="mb-0">${event.title}</h6>
-            ${isApproved ? 
-              '<span class="badge bg-success"><i class="fas fa-check-circle me-1"></i>Approved</span>' : 
-              '<span class="badge bg-warning text-dark"><i class="fas fa-clock me-1"></i>Pending</span>'
-            }
+    const card = `
+      <div class="col-md-6 col-lg-4">
+        <div class="card event-card ${isApproved ? 'border-success' : ''}">
+          <div class="card-header bg-transparent ${isApproved ? 'border-success' : ''}">
+            <div class="d-flex justify-content-between align-items-center">
+              <h6 class="mb-0">${event.title}</h6>
+              ${isApproved ? 
+                '<span class="badge bg-success"><i class="fas fa-check-circle me-1"></i>Approved</span>' : 
+                '<span class="badge bg-warning text-dark"><i class="fas fa-clock me-1"></i>Pending</span>'
+              }
+            </div>
           </div>
-        </div>
-        <img src="${event.imageUrl || 'https://picsum.photos/400/250'}" class="card-img-top" alt="${event.title}">
-        <div class="card-body d-flex flex-column">
-          <p class="card-text">${event.description || "No description available."}</p>
-          <div class="event-meta">
-            <small><i class="far fa-calendar"></i> ${eventDate.toLocaleDateString()}</small><br>
-            <small><i class="far fa-clock"></i> ${eventDate.toLocaleTimeString()}</small>
-            ${event.location ? `<br><small><i class="fas fa-map-marker-alt"></i> ${event.location}</small>` : ''}
-            <br><small><i class="fas fa-user-check"></i> Registered on ${new Date(registration.registeredAt?.toDate()).toLocaleDateString()}</small>
-          </div>
-          <div class="mt-auto pt-3">
-            ${isPastEvent ? 
-              `<a href="feedback.html?eventId=${eventId}&title=${encodeURIComponent(event.title)}" class="btn btn-view w-100">Give Feedback</a>` :
-              `<button class="btn btn-view w-100" disabled>Event Upcoming</button>`
-            }
+          <img src="${event.imageUrl || 'https://picsum.photos/400/250'}" class="card-img-top" alt="${event.title}">
+          <div class="card-body d-flex flex-column">
+            <p class="card-text">${event.description || "No description available."}</p>
+            <div class="event-meta">
+              <small><i class="far fa-calendar"></i> ${eventDate.toLocaleDateString()}</small><br>
+              <small><i class="far fa-clock"></i> ${eventDate.toLocaleTimeString()}</small>
+              ${event.location ? `<br><small><i class="fas fa-map-marker-alt"></i> ${event.location}</small>` : ''}
+              <br><small><i class="fas fa-user-check"></i> Registered on ${new Date(registration.registeredAt?.toDate()).toLocaleDateString()}</small>
+            </div>
+            <div class="mt-auto pt-3">
+              ${isPastEvent ? 
+                `<a href="feedback.html?eventId=${eventId}&title=${encodeURIComponent(event.title)}" class="btn btn-view w-100">Give Feedback</a>` :
+                `<button class="btn btn-view w-100" disabled>Event Upcoming</button>`
+              }
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  `;
-  container.innerHTML += card;
-}
-  </script>
+    `;
+    container.innerHTML += card;
+  }
+</script>
 </body>
 </html>
