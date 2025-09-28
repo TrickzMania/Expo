@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+  <nav class="navbar navbar-dark bg-dark">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="index.html">Event Tracker</a>
+      <button id="logoutBtn" class="btn btn-outline-light btn-sm">Logout</button>
+    </div>
+  </nav>
+
+  <div class="container my-5">
+    <h2 class="mb-4">Your Dashboard</h2>
+
+    <h4>⭐ Starred Events</h4>
+    <div id="starredContainer" class="row mb-5"></div>
+
+    <h4>📌 Your Created Events</h4>
+    <div id="createdContainer" class="row"></div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+    import { getFirestore, collection, getDocs, query, where } 
+      from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged, signOut } 
+      from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+    import { getStarred } from "./userData.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyD2iuNpJI0p1TSA_MdJ-9SNuE6QqeZJRt8",
+      authDomain: "lostandfound-f64d1.firebaseapp.com",
+      projectId: "lostandfound-f64d1",
+      storageBucket: "lostandfound-f64d1.appspot.com",
+      messagingSenderId: "226765931514",
+      appId: "1:226765931514:web:4b3ba5d6288e0273c05a43"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    const starredContainer = document.getElementById("starredContainer");
+    const createdContainer = document.getElementById("createdContainer");
+    const logoutBtn = document.getElementById("logoutBtn");
+
+    logoutBtn.addEventListener("click", () => signOut(auth));
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        window.location.href = "index.html";
+        return;
+      }
+
+      // ⭐ Load starred events
+      const starredIds = await getStarred(user.uid);
+      renderEvents(starredIds, starredContainer);
+
+      // 📌 Load created events
+      const q = query(collection(db, "events"), where("creatorId", "==", user.uid));
+      const snap = await getDocs(q);
+      renderEvents(snap.docs.map(d => d.id), createdContainer);
+    });
+
+    async function renderEvents(ids, container) {
+      container.innerHTML = "";
+      if (ids.length === 0) {
+        container.innerHTML = `<p class="text-muted">No events found.</p>`;
+        return;
+      }
+
+      ids.forEach(id => {
+        container.innerHTML += `
+          <div class="col-md-4 mb-4">
+            <div class="card shadow-sm p-3">
+              <p><strong>Event ID:</strong> ${id}</p>
+              <a href="index.html#${id}" class="btn btn-primary btn-sm">View</a>
+            </div>
+          </div>
+        `;
+      });
+    }
+  </script>
+</body>
+</html>
