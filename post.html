@@ -115,6 +115,17 @@
     .toggle-group .btn {
         width: 150px;
     }
+
+    /* Login required message */
+    .login-required {
+      text-align: center;
+      padding: 3rem;
+    }
+    .login-required i {
+      font-size: 3rem;
+      color: #6c757d;
+      margin-bottom: 1rem;
+    }
   </style>
 </head>
 <body>
@@ -122,63 +133,16 @@
   <nav class="navbar navbar-dark bg-dark fixed-top">
     <div class="container-fluid">
       <a class="navbar-brand" href="index.html">📅 Event Tracker</a>
+      <div class="d-flex">
+        <button id="loginBtn" class="btn btn-outline-light btn-sm me-2">Login</button>
+        <button id="logoutBtn" class="btn btn-outline-danger btn-sm d-none">Logout</button>
+      </div>
     </div>
   </nav>
 
   <div class="container my-5">
-    <div class="form-card">
-      <h2>Add New Event</h2>
-      <form id="addEventForm" class="row g-4">
-        <div class="col-12">
-          <label for="title" class="form-label">Event Title</label>
-          <input type="text" id="title" class="form-control" placeholder="Enter event title" required>
-        </div>
-        <div class="col-12">
-          <label class="form-label">Event Type</label>
-          <div class="btn-group toggle-group d-flex" role="group">
-            <input type="radio" class="btn-check" name="eventType" id="typeOffline" autocomplete="off" checked>
-            <label class="btn btn-outline-primary rounded-pill me-2" for="typeOffline">Offline</label>
-            
-            <input type="radio" class="btn-check" name="eventType" id="typeOnline" autocomplete="off">
-            <label class="btn btn-outline-primary rounded-pill" for="typeOnline">Online</label>
-          </div>
-        </div>
-        
-        <div id="offlineFields" class="col-12">
-          <label for="location" class="form-label">Location</label>
-          <input type="text" id="location" class="form-control" placeholder="Enter physical location">
-        </div>
-
-        <div id="onlineFields" class="col-12" style="display:none;">
-          <label for="eventLink" class="form-label">Event Link</label>
-          <input type="url" id="eventLink" class="form-control" placeholder="https://example.com/join">
-        </div>
-
-        <div class="col-md-6">
-          <label for="date" class="form-label">Date & Time</label>
-          <input type="datetime-local" id="date" class="form-control" required>
-        </div>
-        <div class="col-md-6">
-          <label for="duration" class="form-label">Duration (minutes)</label>
-          <input type="number" id="duration" class="form-control" placeholder="60" required>
-        </div>
-        <div class="col-md-6">
-          <label for="organizer" class="form-label">Organizer</label>
-          <input type="text" id="organizer" class="form-control" placeholder="Organizer name">
-        </div>
-        <div class="col-md-6">
-          <label for="organizerEmail" class="form-label">Organizer Email</label>
-          <input type="email" id="organizerEmail" class="form-control" placeholder="organizer@example.com" required>
-        </div>
-        <div class="col-12">
-          <label for="description" class="form-label">Description</label>
-          <textarea id="description" class="form-control" rows="3" placeholder="Write a short description"></textarea>
-        </div>
-
-        <div class="col-12 text-center mt-5">
-          <button type="submit" class="btn btn-gradient btn-lg px-5">✅ Add Event</button>
-        </div>
-      </form>
+    <div class="form-card" id="formContainer">
+      <!-- Content will be dynamically shown based on auth state -->
     </div>
   </div>
 
@@ -193,6 +157,8 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
     import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+    import { login, logout } from "./auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyD2iuNpJI0p1TSA_MdJ-9SNuE6QqeZJRt8",
@@ -205,59 +171,158 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+    const auth = getAuth(app);
 
-    const offlineFields = document.getElementById("offlineFields");
-    const onlineFields = document.getElementById("onlineFields");
-    const offlineRadio = document.getElementById("typeOffline");
-    const onlineRadio = document.getElementById("typeOnline");
+    const formContainer = document.getElementById("formContainer");
+    const loginBtn = document.getElementById("loginBtn");
+    const logoutBtn = document.getElementById("logoutBtn");
 
-    offlineRadio.addEventListener('change', () => {
-      offlineFields.style.display = 'block';
-      onlineFields.style.display = 'none';
-    });
+    loginBtn.addEventListener("click", login);
+    logoutBtn.addEventListener("click", logout);
 
-    onlineRadio.addEventListener('change', () => {
-      offlineFields.style.display = 'none';
-      onlineFields.style.display = 'block';
-    });
+    // Show login required message
+    function showLoginRequired() {
+      formContainer.innerHTML = `
+        <div class="login-required">
+          <i class="fas fa-lock"></i>
+          <h3>Login Required</h3>
+          <p class="text-muted">You need to be logged in to create events.</p>
+          <button class="btn btn-gradient" onclick="document.getElementById('loginBtn').click()">
+            <i class="fas fa-sign-in-alt"></i> Login to Continue
+          </button>
+        </div>
+      `;
+    }
 
-    document.getElementById("addEventForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
+    // Show event creation form
+    function showEventForm() {
+      formContainer.innerHTML = `
+        <h2>Add New Event</h2>
+        <form id="addEventForm" class="row g-4">
+          <div class="col-12">
+            <label for="title" class="form-label">Event Title</label>
+            <input type="text" id="title" class="form-control" placeholder="Enter event title" required>
+          </div>
+          <div class="col-12">
+            <label class="form-label">Event Type</label>
+            <div class="btn-group toggle-group d-flex" role="group">
+              <input type="radio" class="btn-check" name="eventType" id="typeOffline" autocomplete="off" checked>
+              <label class="btn btn-outline-primary rounded-pill me-2" for="typeOffline">Offline</label>
+              
+              <input type="radio" class="btn-check" name="eventType" id="typeOnline" autocomplete="off">
+              <label class="btn btn-outline-primary rounded-pill" for="typeOnline">Online</label>
+            </div>
+          </div>
+          
+          <div id="offlineFields" class="col-12">
+            <label for="location" class="form-label">Location</label>
+            <input type="text" id="location" class="form-control" placeholder="Enter physical location">
+          </div>
 
-      const title = document.getElementById("title").value;
-      const description = document.getElementById("description").value;
-      const organizer = document.getElementById("organizer").value;
-      const organizerEmail = document.getElementById("organizerEmail").value;
-      const date = new Date(document.getElementById("date").value);
-      const duration = parseInt(document.getElementById("duration").value, 10);
-      const imageUrl = "https://picsum.photos/800/600"; 
+          <div id="onlineFields" class="col-12" style="display:none;">
+            <label for="eventLink" class="form-label">Event Link</label>
+            <input type="url" id="eventLink" class="form-control" placeholder="https://example.com/join">
+          </div>
 
-      const eventData = {
-        title,
-        description,
-        organizer,
-        organizerEmail,
-        date,
-        duration,
-        imageUrl,
-        createdAt: serverTimestamp()
-      };
+          <div class="col-md-6">
+            <label for="date" class="form-label">Date & Time</label>
+            <input type="datetime-local" id="date" class="form-control" required>
+          </div>
+          <div class="col-md-6">
+            <label for="duration" class="form-label">Duration (minutes)</label>
+            <input type="number" id="duration" class="form-control" placeholder="60" required>
+          </div>
+          <div class="col-md-6">
+            <label for="organizer" class="form-label">Organizer</label>
+            <input type="text" id="organizer" class="form-control" placeholder="Organizer name">
+          </div>
+          <div class="col-md-6">
+            <label for="organizerEmail" class="form-label">Organizer Email</label>
+            <input type="email" id="organizerEmail" class="form-control" placeholder="organizer@example.com" required>
+          </div>
+          <div class="col-12">
+            <label for="description" class="form-label">Description</label>
+            <textarea id="description" class="form-control" rows="3" placeholder="Write a short description"></textarea>
+          </div>
 
-      if (onlineRadio.checked) {
-        eventData.isOnline = true;
-        eventData.link = document.getElementById("eventLink").value || "";
+          <div class="col-12 text-center mt-5">
+            <button type="submit" class="btn btn-gradient btn-lg px-5">✅ Add Event</button>
+          </div>
+        </form>
+      `;
+
+      // Re-attach event listeners for the form elements
+      const offlineFields = document.getElementById("offlineFields");
+      const onlineFields = document.getElementById("onlineFields");
+      const offlineRadio = document.getElementById("typeOffline");
+      const onlineRadio = document.getElementById("typeOnline");
+
+      offlineRadio.addEventListener('change', () => {
+        offlineFields.style.display = 'block';
+        onlineFields.style.display = 'none';
+      });
+
+      onlineRadio.addEventListener('change', () => {
+        offlineFields.style.display = 'none';
+        onlineFields.style.display = 'block';
+      });
+
+      // Form submission
+      document.getElementById("addEventForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const title = document.getElementById("title").value;
+        const description = document.getElementById("description").value;
+        const organizer = document.getElementById("organizer").value;
+        const organizerEmail = document.getElementById("organizerEmail").value;
+        const date = new Date(document.getElementById("date").value);
+        const duration = parseInt(document.getElementById("duration").value, 10);
+        const imageUrl = "https://picsum.photos/800/600"; 
+        const user = auth.currentUser;
+
+        const eventData = {
+          title,
+          description,
+          organizer,
+          organizerEmail,
+          date,
+          duration,
+          imageUrl,
+          creatorId: user.uid,
+          creatorEmail: user.email,
+          creatorName: user.displayName || organizer,
+          createdAt: serverTimestamp()
+        };
+
+        if (onlineRadio.checked) {
+          eventData.isOnline = true;
+          eventData.link = document.getElementById("eventLink").value || "";
+        } else {
+          eventData.isOnline = false;
+          eventData.location = document.getElementById("location").value || "";
+        }
+
+        try {
+          await addDoc(collection(db, "events"), eventData);
+          alert("✅ Event added successfully!");
+          window.location.href = "index.html";
+        } catch (error) {
+          console.error("Error adding event:", error);
+          alert("❌ Failed to add event. Check console for details.");
+        }
+      });
+    }
+
+    // Auth state listener
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        loginBtn.classList.add("d-none");
+        logoutBtn.classList.remove("d-none");
+        showEventForm();
       } else {
-        eventData.isOnline = false;
-        eventData.location = document.getElementById("location").value || "";
-      }
-
-      try {
-        await addDoc(collection(db, "events"), eventData);
-        alert("✅ Event added successfully!");
-        window.location.href = "index.html";
-      } catch (error) {
-        console.error("Error adding event:", error);
-        alert("❌ Failed to add event. Check console for details.");
+        loginBtn.classList.remove("d-none");
+        logoutBtn.classList.add("d-none");
+        showLoginRequired();
       }
     });
   </script>
