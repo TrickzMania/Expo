@@ -1,6 +1,13 @@
 // userData.js
-import { getFirestore, doc, setDoc, getDoc, deleteDoc, collection, getDocs } 
-  from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+import { 
+  getFirestore, 
+  doc, 
+  setDoc, 
+  getDoc, 
+  deleteDoc,  // ← ADD THIS IMPORT
+  collection, 
+  getDocs 
+} from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
 // ⭐ Star an event
 export async function toggleStar(userId, eventId) {
@@ -15,7 +22,7 @@ export async function toggleStar(userId, eventId) {
 
     if (snap.exists()) {
       console.log("Removing star...");
-      await deleteDoc(starRef);
+      await deleteDoc(starRef);  // ← Now this will work!
       console.log("Star removed successfully");
       return false;
     } else {
