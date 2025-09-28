@@ -80,7 +80,7 @@
     .dashboard-header {
       background: var(--primary-gradient);
       color: white;
-      padding: 5rem 0 3rem; /* Increased padding to match hero section feel */
+      padding: 5rem 0 3rem; 
       border-bottom-left-radius: 60px;
       border-bottom-right-radius: 60px;
       box-shadow: 0 10px 30px rgba(0,0,0,0.2);
@@ -185,11 +185,27 @@
       transform: translateY(-2px);
       box-shadow: 0 5px 15px rgba(255, 193, 7, 0.3);
     }
-    
-    /* --- FOOTER STYLES --- */
-    footer {
-        background: var(--primary-gradient) !important;
-        color: white;
+
+    /* --- EMPTY STATE REFINEMENT --- */
+    .empty-state {
+      text-align: center;
+      padding: 5rem 2rem; /* Increased vertical padding for more whitespace */
+      color: #666;
+    }
+    .empty-state i {
+      font-size: 3rem;
+      color: #ccc;
+      margin-bottom: 1rem;
+    }
+
+    /* --- CREATED EVENT BUTTON GROUP REFINEMENT --- */
+    .created-btn-group {
+      display: flex;
+      gap: 0.5rem; /* Reduced gap between buttons */
+    }
+    .created-btn-group .btn {
+      padding: 0.4rem 0.8rem; /* Made padding smaller to fit better */
+      font-size: 0.85rem;
     }
   </style>
 </head>
@@ -206,7 +222,7 @@
           <li class="nav-item"><a class="nav-link" href="post.html">Add Event</a></li>
           <li class="nav-item"><a class="nav-link active" href="dashboard.html">Dashboard</a></li>
           <li class="nav-item">
-            <button id="logoutBtn" class="btn btn-nav-logout">Logout</button>
+            <button id="logoutBtn" class="btn btn-nav-logout ms-3">Logout</button>
           </li>
         </ul>
       </div>
@@ -308,7 +324,7 @@
 
     const firebaseConfig = {
       apiKey: "AIzaSyD2iuNpJI0p1TSA_MdJ-9SNuE6QqeZJRt8",
-      authDomain: "lostandand-f64d1.firebaseapp.com",
+      authDomain: "lostandfound-f64d1.firebaseapp.com",
       projectId: "lostandfound-f64d1",
       storageBucket: "lostandfound-f64d1.appspot.com",
       messagingSenderId: "226765931514",
@@ -436,12 +452,12 @@
               </div>
               <div class="mt-auto pt-3">
                 ${isCreated ? 
-                  `<div class="d-flex">
-                    <a href="update-event.html?eventId=${eventId}" class="btn btn-edit me-2 flex-grow-1">
-                      <i class="fas fa-edit me-1"></i> Update Event
+                  `<div class="created-btn-group">
+                    <a href="update-event.html?eventId=${eventId}" class="btn btn-edit">
+                      <i class="fas fa-edit me-1"></i> Update
                     </a>
-                    <a href="registrations.html?eventId=${eventId}&title=${encodeURIComponent(event.title)}" class="btn btn-view flex-grow-1">
-                      <i class="fas fa-users me-1"></i> View Registrations
+                    <a href="registrations.html?eventId=${eventId}&title=${encodeURIComponent(event.title)}" class="btn btn-view">
+                      <i class="fas fa-users me-1"></i> Registrations
                     </a>
                   </div>` :
                   isPastEvent && !isCreated ? 
