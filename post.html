@@ -276,31 +276,31 @@
       });
 
       // Form submission
-      document.getElementById("addEventForm").addEventListener("submit", async (e) => {
-        e.preventDefault();
+     document.getElementById("addEventForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
 
-        const title = document.getElementById("title").value;
-        const description = document.getElementById("description").value;
-        const organizer = document.getElementById("organizer").value;
-        const organizerEmail = document.getElementById("organizerEmail").value;
-        const date = new Date(document.getElementById("date").value);
-        const duration = parseInt(document.getElementById("duration").value, 10);
-        const imageUrl = "https://picsum.photos/800/600"; 
-        const user = auth.currentUser;
+  const title = document.getElementById("title").value;
+  const description = document.getElementById("description").value;
+  const organizer = document.getElementById("organizer").value;
+  const organizerEmail = document.getElementById("organizerEmail").value;
+  const date = new Date(document.getElementById("date").value);
+  const duration = parseInt(document.getElementById("duration").value, 10) || 60; // Default to 60 min
+  const imageUrl = "https://picsum.photos/800/600"; 
+  const user = auth.currentUser;
 
-        const eventData = {
-          title,
-          description,
-          organizer,
-          organizerEmail,
-          date,
-          duration,
-          imageUrl,
-          creatorId: user.uid,
-          creatorEmail: user.email,
-          creatorName: user.displayName || organizer,
-          createdAt: serverTimestamp()
-        };
+  const eventData = {
+    title,
+    description,
+    organizer,
+    organizerEmail,
+    date,
+    duration, // Make sure this is included
+    imageUrl,
+    creatorId: user.uid,
+    creatorEmail: user.email,
+    creatorName: user.displayName || organizer,
+    createdAt: serverTimestamp()
+  };
 
         if (onlineRadio.checked) {
           eventData.isOnline = true;
