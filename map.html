@@ -262,66 +262,75 @@
     });
 
     async function loadEventSchedule(user) {
-      try {
-        // Get user's registrations
-        const registrationsQuery = query(
-          collection(db, "registrations"), 
-          where("studentEmail", "==", user.email)
-        );
-        
-        const registrationsSnap = await getDocs(registrationsQuery);
-        const upcomingEvents = [];
+  try {
+    console.log("Loading events for user:", user.email);
+    
+    // Get user's registrations using their email
+    const registrationsQuery = query(
+      collection(db, "registrations"), 
+      where("studentEmail", "==", user.email)
+    );
+    
+    const registrationsSnap = await getDocs(registrationsQuery);
+    const upcomingEvents = [];
 
-        // Get event details and filter out past events
-        const now = new Date();
+    // Get event details and filter out past events
+    const now = new Date();
+    
+    for (const docSnap of registrationsSnap.docs) {
+      const registration = docSnap.data();
+      console.log("Found registration:", registration);
+      
+      const eventDoc = await getDoc(doc(db, "events", registration.eventId));
+      
+      if (eventDoc.exists()) {
+        const event = eventDoc.data();
+        const eventDate = event.date?.toDate ? event.date.toDate() : new Date(event.date);
         
-        for (const docSnap of registrationsSnap.docs) {
-          const registration = docSnap.data();
-          const eventDoc = await getDoc(doc(db, "events", registration.eventId));
-          
-          if (eventDoc.exists()) {
-            const event = eventDoc.data();
-            const eventDate = event.date?.toDate ? event.date.toDate() : new Date(event.date);
-            
-            // Only include future events
-            if (eventDate >= now) {
-              // Check approval status
-              const approvalQuery = query(
-                collection(db, "approvals"),
-                where("eventId", "==", registration.eventId),
-                where("studentEmail", "==", registration.studentEmail)
-              );
-              const approvalSnap = await getDocs(approvalQuery);
-              const isApproved = !approvalSnap.empty;
+        console.log("Event date:", eventDate, "Now:", now);
+        
+        // Only include future events
+        if (eventDate >= now) {
+          // Check approval status
+          const approvalQuery = query(
+            collection(db, "approvals"),
+            where("eventId", "==", registration.eventId),
+            where("studentEmail", "==", user.email)
+          );
+          const approvalSnap = await getDocs(approvalQuery);
+          const isApproved = !approvalSnap.empty;
 
-              upcomingEvents.push({
-                ...event,
-                id: eventDoc.id,
-                date: eventDate,
-                isApproved: isApproved,
-                registrationDate: registration.registeredAt?.toDate ? registration.registeredAt.toDate() : new Date(registration.registeredAt)
-              });
-            }
-          }
+          upcomingEvents.push({
+            ...event,
+            id: eventDoc.id,
+            date: eventDate,
+            isApproved: isApproved,
+            registrationDate: registration.registeredAt?.toDate ? registration.registeredAt.toDate() : new Date(registration.registeredAt)
+          });
         }
-
-        // Sort events by date
-        upcomingEvents.sort((a, b) => a.date - b.date);
-        
-        // Render timeline
-        renderTimeline(upcomingEvents);
-
-      } catch (error) {
-        console.error("Error loading event schedule:", error);
-        document.getElementById("timelineContainer").innerHTML = `
-          <div class="empty-state">
-            <i class="fas fa-exclamation-triangle"></i>
-            <h4>Error Loading Schedule</h4>
-            <p>Please try again later.</p>
-          </div>
-        `;
       }
     }
+
+    console.log("Upcoming events found:", upcomingEvents.length);
+    
+    // Sort events by date
+    upcomingEvents.sort((a, b) => a.date - b.date);
+    
+    // Render timeline
+    renderTimeline(upcomingEvents);
+
+  } catch (error) {
+    console.error("Error loading event schedule:", error);
+    document.getElementById("timelineContainer").innerHTML = `
+      <div class="empty-state">
+        <i class="fas fa-exclamation-triangle"></i>
+        <h4>Error Loading Schedule</h4>
+        <p>${error.message}</p>
+        <a href="dashboard.html" class="btn btn-primary">Go to Dashboard</a>
+      </div>
+    `;
+  }
+}
 
     function renderTimeline(events) {
       const container = document.getElementById("timelineContainer");
