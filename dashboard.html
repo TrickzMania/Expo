@@ -80,7 +80,7 @@
     .dashboard-header {
       background: var(--primary-gradient);
       color: white;
-      padding: 5rem 0 3rem; 
+      padding: 5rem 0 3rem; /* Increased padding to match hero section feel */
       border-bottom-left-radius: 60px;
       border-bottom-right-radius: 60px;
       box-shadow: 0 10px 30px rgba(0,0,0,0.2);
@@ -462,7 +462,7 @@
                   </div>` :
                   isPastEvent && !isCreated ? 
                   `<a href="feedback.html?eventId=${eventId}&title=${encodeURIComponent(event.title)}" class="btn btn-view w-100">Give Feedback</a>` :
-                  `<a href="register.html?eventId=${eventId}&title=${encodeURIComponent(event.title)}" class="btn btn-view w-100">View Details</a>`
+                  `<a href="register.html?eventId=${eventId}&title=${encodeURIComponent(event.title)}" class="btn btn-view w-100">View Registrations</a>`
                 }
               </div>
             </div>
