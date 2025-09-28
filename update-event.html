@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Update Event</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  
+  <style>
+    :root {
+      --dark-blue: #1a237e;
+      --light-gray: #f0f2f5;
+      --secondary-gradient: linear-gradient(45deg, #6a11cb, #2575fc);
+    }
+    
+    body {
+      font-family: 'Poppins', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: var(--light-gray);
+      padding-top: 5rem;
+    }
+
+    .navbar {
+      background-color: var(--dark-blue) !important;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      position: fixed;
+      width: 100%;
+      top: 0;
+      z-index: 1030;
+    }
+
+    .form-card {
+      max-width: 800px;
+      margin: auto;
+      border-radius: 1.5rem;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      padding: 3rem;
+      background: #fff;
+    }
+
+    .form-card h2 {
+      font-weight: 700;
+      color: var(--dark-blue);
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+
+    .btn-update {
+      background: var(--secondary-gradient);
+      border: none;
+      color: white;
+      border-radius: 50px;
+      padding: 1rem 2.5rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .btn-update:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    }
+
+    .btn-delete {
+      background: #dc3545;
+      border: none;
+      color: white;
+      border-radius: 50px;
+      padding: 1rem 2.5rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .btn-delete:hover {
+      background: #c82333;
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba(220, 53, 69, 0.3);
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar navbar-dark bg-dark fixed-top">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="index.html">📅 Event Tracker</a>
+      <div class="d-flex">
+        <a href="index.html" class="btn btn-outline-light btn-sm me-2">Home</a>
+        <a href="dashboard.html" class="btn btn-outline-light btn-sm">Dashboard</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container my-5">
+    <div class="form-card">
+      <h2>Update Event</h2>
+      <form id="updateEventForm" class="row g-4">
+        <div class="col-12">
+          <label for="title" class="form-label">Event Title</label>
+          <input type="text" id="title" class="form-control" placeholder="Enter event title" required>
+        </div>
+        
+        <div class="col-12">
+          <label class="form-label">Event Type</label>
+          <div class="btn-group toggle-group d-flex" role="group">
+            <input type="radio" class="btn-check" name="eventType" id="typeOffline" autocomplete="off">
+            <label class="btn btn-outline-primary rounded-pill me-2" for="typeOffline">Offline</label>
+            <input type="radio" class="btn-check" name="eventType" id="typeOnline" autocomplete="off">
+            <label class="btn btn-outline-primary rounded-pill" for="typeOnline">Online</label>
+          </div>
+        </div>
+        
+        <div id="offlineFields" class="col-12">
+          <label for="location" class="form-label">Location</label>
+          <input type="text" id="location" class="form-control" placeholder="Enter physical location">
+        </div>
+
+        <div id="onlineFields" class="col-12" style="display:none;">
+          <label for="eventLink" class="form-label">Event Link</label>
+          <input type="url" id="eventLink" class="form-control" placeholder="https://example.com/join">
+        </div>
+
+        <div class="col-md-6">
+          <label for="date" class="form-label">Date & Time</label>
+          <input type="datetime-local" id="date" class="form-control" required>
+        </div>
+        <div class="col-md-6">
+          <label for="duration" class="form-label">Duration (minutes)</label>
+          <input type="number" id="duration" class="form-control" placeholder="60" required>
+        </div>
+        <div class="col-md-6">
+          <label for="organizer" class="form-label">Organizer</label>
+          <input type="text" id="organizer" class="form-control" placeholder="Organizer name">
+        </div>
+        <div class="col-md-6">
+          <label for="organizerEmail" class="form-label">Organizer Email</label>
+          <input type="email" id="organizerEmail" class="form-control" placeholder="organizer@example.com" required>
+        </div>
+        <div class="col-12">
+          <label for="description" class="form-label">Description</label>
+          <textarea id="description" class="form-control" rows="3" placeholder="Write a short description"></textarea>
+        </div>
+
+        <div class="col-12 text-center mt-5">
+          <button type="submit" class="btn btn-update btn-lg px-5 me-3">
+            <i class="fas fa-save me-2"></i> Update Event
+          </button>
+          <button type="button" id="deleteBtn" class="btn btn-delete btn-lg px-5">
+            <i class="fas fa-trash me-2"></i> Delete Event
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+    import { getFirestore, doc, getDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyD2iuNpJI0p1TSA_MdJ-9SNuE6QqeZJRt8",
+      authDomain: "lostandfound-f64d1.firebaseapp.com",
+      projectId: "lostandfound-f64d1",
+      storageBucket: "lostandfound-f64d1.appspot.com",
+      messagingSenderId: "226765931514",
+      appId: "1:226765931514:web:4b3ba5d6288e0273c05a43"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    const params = new URLSearchParams(window.location.search);
+    const eventId = params.get("eventId");
+    let currentEvent = null;
+
+    // Form elements
+    const offlineFields = document.getElementById("offlineFields");
+    const onlineFields = document.getElementById("onlineFields");
+    const offlineRadio = document.getElementById("typeOffline");
+    const onlineRadio = document.getElementById("typeOnline");
+
+    // Event type toggle
+    offlineRadio.addEventListener('change', () => {
+      offlineFields.style.display = 'block';
+      onlineFields.style.display = 'none';
+    });
+
+    onlineRadio.addEventListener('change', () => {
+      offlineFields.style.display = 'none';
+      onlineFields.style.display = 'block';
+    });
+
+    // Load event data
+    async function loadEventData() {
+      if (!eventId) {
+        alert("No event specified");
+        window.location.href = "dashboard.html";
+        return;
+      }
+
+      try {
+        const eventDoc = await getDoc(doc(db, "events", eventId));
+        if (eventDoc.exists()) {
+          currentEvent = eventDoc.data();
+          
+          // Check if user is the creator
+          if (currentEvent.creatorId !== auth.currentUser.uid) {
+            alert("You can only edit events you created");
+            window.location.href = "dashboard.html";
+            return;
+          }
+
+          // Populate form
+          document.getElementById("title").value = currentEvent.title || "";
+          document.getElementById("description").value = currentEvent.description || "";
+          document.getElementById("organizer").value = currentEvent.organizer || "";
+          document.getElementById("organizerEmail").value = currentEvent.organizerEmail || "";
+          
+          // Set date (convert to local datetime string)
+          const eventDate = currentEvent.date?.toDate ? currentEvent.date.toDate() : new Date(currentEvent.date);
+          document.getElementById("date").value = eventDate.toISOString().slice(0, 16);
+          
+          document.getElementById("duration").value = currentEvent.duration || 60;
+
+          // Set event type
+          if (currentEvent.isOnline) {
+            onlineRadio.checked = true;
+            onlineFields.style.display = 'block';
+            offlineFields.style.display = 'none';
+            document.getElementById("eventLink").value = currentEvent.link || "";
+          } else {
+            offlineRadio.checked = true;
+            offlineFields.style.display = 'block';
+            onlineFields.style.display = 'none';
+            document.getElementById("location").value = currentEvent.location || "";
+          }
+        } else {
+          alert("Event not found");
+          window.location.href = "dashboard.html";
+        }
+      } catch (error) {
+        console.error("Error loading event:", error);
+        alert("Error loading event data");
+      }
+    }
+
+    // Update event
+    document.getElementById("updateEventForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const title = document.getElementById("title").value;
+      const description = document.getElementById("description").value;
+      const organizer = document.getElementById("organizer").value;
+      const organizerEmail = document.getElementById("organizerEmail").value;
+      const date = new Date(document.getElementById("date").value);
+      const duration = parseInt(document.getElementById("duration").value, 10);
+
+      const updateData = {
+        title,
+        description,
+        organizer,
+        organizerEmail,
+        date,
+        duration,
+        updatedAt: new Date()
+      };
+
+      if (onlineRadio.checked) {
+        updateData.isOnline = true;
+        updateData.link = document.getElementById("eventLink").value || "";
+        updateData.location = ""; // Clear location for online events
+      } else {
+        updateData.isOnline = false;
+        updateData.location = document.getElementById("location").value || "";
+        updateData.link = ""; // Clear link for offline events
+      }
+
+      try {
+        await updateDoc(doc(db, "events", eventId), updateData);
+        alert("✅ Event updated successfully!");
+        window.location.href = "dashboard.html";
+      } catch (error) {
+        console.error("Error updating event:", error);
+        alert("❌ Failed to update event");
+      }
+    });
+
+    // Delete event
+    document.getElementById("deleteBtn").addEventListener("click", async () => {
+      if (confirm("Are you sure you want to delete this event? This action cannot be undone.")) {
+        try {
+          await deleteDoc(doc(db, "events", eventId));
+          alert("✅ Event deleted successfully!");
+          window.location.href = "dashboard.html";
+        } catch (error) {
+          console.error("Error deleting event:", error);
+          alert("❌ Failed to delete event");
+        }
+      }
+    });
+
+    // Check auth and load data
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        window.location.href = "index.html";
+        return;
+      }
+      loadEventData();
+    });
+  </script>
+</body>
+</html>
