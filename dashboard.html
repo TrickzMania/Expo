@@ -152,6 +152,24 @@
       box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
     }
 
+    .btn-edit {
+      background: #ffc107;
+      border: none;
+      color: #212529;
+      border-radius: 50px;
+      padding: 0.5rem 1.5rem;
+      font-weight: 500;
+      font-size: 0.9rem;
+      transition: all 0.3s ease;
+      margin-right: 0.5rem;
+    }
+
+    .btn-edit:hover {
+      background: #e0a800;
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(255, 193, 7, 0.3);
+    }
+
     .empty-state {
       text-align: center;
       padding: 3rem;
@@ -298,8 +316,6 @@
     const createdCount = document.getElementById("createdCount");
     const registeredCount = document.getElementById("registeredCount");
 
-    let lastVisitTime = localStorage.getItem('lastDashboardVisit') || new Date().toISOString();
-
     logoutBtn.addEventListener("click", () => {
       signOut(auth);
       window.location.href = "index.html";
@@ -312,12 +328,7 @@
       }
 
       console.log("Loading dashboard for user:", user.uid);
-
-      // Load all data
       await loadDashboardData(user.uid);
-
-      // Update last visit time
-      localStorage.setItem('lastDashboardVisit', new Date().toISOString());
     });
 
     async function loadDashboardData(userId) {
@@ -365,7 +376,7 @@
         const eventDoc = await getDoc(doc(db, "events", eventId));
         if (eventDoc.exists()) {
           const event = eventDoc.data();
-          renderEventCard(event, eventId, starredContainer);
+          renderEventCard(event, eventId, starredContainer, false, false);
         }
       }
     }
@@ -389,7 +400,7 @@
 
       createdDocs.forEach((docSnap) => {
         const event = docSnap.data();
-        renderEventCard(event, docSnap.id, createdContainer, true);
+        renderEventCard(event, docSnap.id, createdContainer, true, false);
       });
     }
 
@@ -439,9 +450,18 @@
                 ${registration ? `<br><small><i class="fas fa-user-check"></i> Registered on ${new Date(registration.registeredAt?.toDate()).toLocaleDateString()}</small>` : ''}
               </div>
               <div class="mt-auto pt-3">
-                ${isPastEvent && !isCreated ? 
+                ${isCreated ? 
+                  `<div class="d-flex">
+                    <a href="update-event.html?eventId=${eventId}" class="btn btn-edit">
+                      <i class="fas fa-edit me-1"></i> Update Event
+                    </a>
+                    <a href="register.html?eventId=${eventId}&title=${encodeURIComponent(event.title)}" class="btn btn-view">
+                      View Details
+                    </a>
+                  </div>` :
+                  isPastEvent && !isCreated ? 
                   `<a href="feedback.html?eventId=${eventId}&title=${encodeURIComponent(event.title)}" class="btn btn-view w-100">Give Feedback</a>` :
-                  `<a href="register.html?eventId=${eventId}&title=${encodeURIComponent(event.title)}" class="btn btn-view w-100">${isCreated ? 'Manage Event' : 'View Details'}</a>`
+                  `<a href="register.html?eventId=${eventId}&title=${encodeURIComponent(event.title)}" class="btn btn-view w-100">View Details</a>`
                 }
               </div>
             </div>
