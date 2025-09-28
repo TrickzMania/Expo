@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -25,6 +24,9 @@
       font-family: 'Poppins', sans-serif;
       background: var(--light-gray);
       padding-top: 5rem;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
     }
 
     .navbar {
@@ -198,14 +200,6 @@
       50% { transform: scale(1.05); }
       100% { transform: scale(1); }
     }
-
-    footer {
-      background-color: var(--dark-blue) !important;
-      color: white;
-      margin-top: 4rem;
-      padding: 2rem 0;
-      text-align: center;
-    }
   </style>
 </head>
 <body>
@@ -227,7 +221,7 @@
     </div>
   </div>
 
-  <div class="container my-5">
+  <div class="container my-5 flex-grow-1">
     <!-- Statistics Cards -->
     <div class="row g-4 mb-5">
       <div class="col-md-4">
@@ -272,43 +266,43 @@
       <div id="createdContainer" class="row g-4"></div>
     </div>
 
-    <!-- Registered Events Section -->
-   <!-- Event Schedule Section -->
-<div class="section-card">
-  <div class="d-flex justify-content-between align-items-center">
-    <h3 class="section-title">
-      <i class="fas fa-road me-2"></i> Event Schedule
-    </h3>
-  </div>
-  <div class="row g-4">
-    <div class="col-12">
-      <div class="text-center p-4">
-        <i class="fas fa-calendar-alt display-1 text-primary mb-3"></i>
-        <h4>Your Event Roadmap</h4>
-        <p class="text-muted mb-4">View your upcoming events in a beautiful timeline format</p>
-        <a href="map.html" class="btn btn-primary btn-lg">
-          <i class="fas fa-map me-2"></i> View Event Schedule
-        </a>
+    <!-- Event Schedule Section -->
+    <div class="section-card">
+      <div class="d-flex justify-content-between align-items-center">
+        <h3 class="section-title">
+          <i class="fas fa-road me-2"></i> Event Schedule
+        </h3>
+      </div>
+      <div class="row g-4">
+        <div class="col-12">
+          <div class="text-center p-4">
+            <i class="fas fa-calendar-alt display-1 text-primary mb-3"></i>
+            <h4>Your Event Roadmap</h4>
+            <p class="text-muted mb-4">View your upcoming events in a beautiful timeline format</p>
+            <a href="map.html" class="btn btn-primary btn-lg">
+              <i class="fas fa-map me-2"></i> View Event Schedule
+            </a>
+          </div>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
   <footer class="text-white py-4 mt-auto" style="background: linear-gradient(135deg, #1a237e, #4a148c);">
-  <div class="container">
-    <div class="row align-items-center">
-      <div class="col-md-8">
-        <p class="mb-1 fw-bold">📅 Smart Campus Event Tracker</p>
-        <small class="text-light opacity-75">Streamlining campus event management and participation</small>
-      </div>
-      <div class="col-md-4 text-md-end">
-        <p class="mb-0 text-light opacity-75 small">
-          &copy; 2025 All Rights Reserved
-        </p>
+    <div class="container">
+      <div class="row align-items-center">
+        <div class="col-md-8">
+          <p class="mb-1 fw-bold">📅 Smart Campus Event Tracker</p>
+          <small class="text-light opacity-75">Streamlining campus event management and participation</small>
+        </div>
+        <div class="col-md-4 text-md-end">
+          <p class="mb-0 text-light opacity-75 small">
+            &copy; 2025 All Rights Reserved
+          </p>
+        </div>
       </div>
     </div>
-  </div>
-</footer>
+  </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
   <script type="module">
@@ -332,7 +326,6 @@
 
     const starredContainer = document.getElementById("starredContainer");
     const createdContainer = document.getElementById("createdContainer");
-    const registeredContainer = document.getElementById("registeredContainer");
     const logoutBtn = document.getElementById("logoutBtn");
     const starredCount = document.getElementById("starredCount");
     const createdCount = document.getElementById("createdCount");
@@ -366,11 +359,10 @@
         createdCount.textContent = createdSnap.size;
         await renderCreatedEvents(createdSnap.docs);
 
-        // Load registrations
+        // Load registrations count
         const registrationsQuery = query(collection(db, "registrations"), where("studentEmail", "==", auth.currentUser.email));
         const registrationsSnap = await getDocs(registrationsQuery);
         registeredCount.textContent = registrationsSnap.size;
-        await renderRegisteredEvents(registrationsSnap.docs);
 
       } catch (error) {
         console.error("Error loading dashboard data:", error);
@@ -426,33 +418,6 @@
       });
     }
 
-    async function renderRegisteredEvents(registrationDocs) {
-      registeredContainer.innerHTML = "";
-      
-      if (registrationDocs.length === 0) {
-        registeredContainer.innerHTML = `
-          <div class="col-12">
-            <div class="empty-state">
-              <i class="far fa-clipboard"></i>
-              <h4>No Registrations</h4>
-              <p>Register for events to see them here!</p>
-              <a href="index.html" class="btn btn-view">Browse Events</a>
-            </div>
-          </div>
-        `;
-        return;
-      }
-
-      for (const docSnap of registrationDocs) {
-        const registration = docSnap.data();
-        const eventDoc = await getDoc(doc(db, "events", registration.eventId));
-        if (eventDoc.exists()) {
-          const event = eventDoc.data();
-          renderEventCard(event, registration.eventId, registeredContainer, false, registration);
-        }
-      }
-    }
-
     function renderEventCard(event, eventId, container, isCreated = false, registration = null) {
       const eventDate = event.date?.toDate ? event.date.toDate() : new Date(event.date);
       const now = new Date();
@@ -472,20 +437,20 @@
                 ${registration ? `<br><small><i class="fas fa-user-check"></i> Registered on ${new Date(registration.registeredAt?.toDate()).toLocaleDateString()}</small>` : ''}
               </div>
               <div class="mt-auto pt-3">
-  ${isCreated ? 
-    `<div class="d-flex">
-      <a href="update-event.html?eventId=${eventId}" class="btn btn-edit">
-        <i class="fas fa-edit me-1"></i> Update Event
-      </a>
-      <a href="registrations.html?eventId=${eventId}&title=${encodeURIComponent(event.title)}" class="btn btn-view">
-        <i class="fas fa-users me-1"></i> View Registrations
-      </a>
-    </div>` :
-    isPastEvent && !isCreated ? 
-    `<a href="feedback.html?eventId=${eventId}&title=${encodeURIComponent(event.title)}" class="btn btn-view w-100">Give Feedback</a>` :
-    `<a href="register.html?eventId=${eventId}&title=${encodeURIComponent(event.title)}" class="btn btn-view w-100">View Details</a>`
-  }
-</div>
+                ${isCreated ? 
+                  `<div class="d-flex">
+                    <a href="update-event.html?eventId=${eventId}" class="btn btn-edit">
+                      <i class="fas fa-edit me-1"></i> Update Event
+                    </a>
+                    <a href="registrations.html?eventId=${eventId}&title=${encodeURIComponent(event.title)}" class="btn btn-view">
+                      <i class="fas fa-users me-1"></i> View Registrations
+                    </a>
+                  </div>` :
+                  isPastEvent && !isCreated ? 
+                  `<a href="feedback.html?eventId=${eventId}&title=${encodeURIComponent(event.title)}" class="btn btn-view w-100">Give Feedback</a>` :
+                  `<a href="register.html?eventId=${eventId}&title=${encodeURIComponent(event.title)}" class="btn btn-view w-100">View Details</a>`
+                }
+              </div>
             </div>
           </div>
         </div>
