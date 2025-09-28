@@ -1,4 +1,4 @@
-  <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -91,40 +91,27 @@
       display: block;
     }
 
-    .registration-item.border-success {
-  border: 2px solid #28a745 !important;
-}
-
-.btn-success, .btn-danger {
-  border-radius: 50%;
-  width: 35px;
-  height: 35px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-}
-
     .btn-expand {
-  background: none;
-  border: 2px solid var(--dark-blue);
-  color: var(--dark-blue);
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1rem;
-  transition: all 0.3s ease;
-  cursor: pointer;
-}
+      background: none;
+      border: 2px solid var(--dark-blue);
+      color: var(--dark-blue);
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 1.2rem;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
 
-.btn-expand:hover {
-  background: var(--dark-blue);
-  color: white;
-  transform: scale(1.1);
-}
+    .btn-expand:hover {
+      background: var(--dark-blue);
+      color: white;
+      transform: scale(1.1);
+    }
 
     .empty-state {
       text-align: center;
@@ -318,149 +305,70 @@
     }
 
     function renderRegistrations(registrations) {
-  const container = document.getElementById("registrationsContainer");
-  
-  if (registrations.length === 0) {
-    container.innerHTML = `
-      <div class="empty-state">
-        <i class="fas fa-users-slash"></i>
-        <h4>No Registrations Yet</h4>
-        <p>No one has registered for this event yet.</p>
-      </div>
-    `;
-    return;
-  }
+      const container = document.getElementById("registrationsContainer");
+      
+      if (registrations.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <i class="fas fa-users-slash"></i>
+            <h4>No Registrations Yet</h4>
+            <p>No one has registered for this event yet.</p>
+          </div>
+        `;
+        return;
+      }
 
-  let html = '';
-  registrations.forEach((reg, index) => {
-    // Check if this registration is already approved
-    const isApproved = reg.approvalStatus === 'approved';
-    
-    html += `
-      <div class="registration-item ${isApproved ? 'border-success' : ''}">
-        <div class="registration-header">
-          <div class="registration-basic">
-            <div>
-              <h6 class="mb-1 fw-bold">${reg.studentName}</h6>
-              <p class="mb-0 text-muted small">
-                <i class="fas fa-phone me-1"></i>${reg.studentPhone}
-                ${isApproved ? '<span class="badge bg-success ms-2"><i class="fas fa-check me-1"></i>Approved</span>' : ''}
-              </p>
+      let html = '';
+      registrations.forEach((reg, index) => {
+        html += `
+          <div class="registration-item">
+            <div class="registration-header">
+              <div class="registration-basic">
+                <div>
+                  <h6 class="mb-1 fw-bold">${reg.studentName}</h6>
+                  <p class="mb-0 text-muted small">
+                    <i class="fas fa-phone me-1"></i>${reg.studentPhone}
+                  </p>
+                </div>
+                <button class="btn-expand" onclick="toggleDetails(${index})" title="View full details">
+                  V
+                </button>
+              </div>
             </div>
-            <div class="d-flex align-items-center gap-2">
-              ${!isApproved ? `
-                <button class="btn btn-success btn-sm" onclick="approveRegistration('${reg.studentEmail}', '${reg.id}', ${index})" title="Approve Registration">
-                  <i class="fas fa-check"></i>
-                </button>
-              ` : `
-                <button class="btn btn-danger btn-sm" onclick="unapproveRegistration('${reg.studentEmail}', '${reg.id}', ${index})" title="Unapprove Registration">
-                  <i class="fas fa-times"></i>
-                </button>
-              `}
-              <button class="btn-expand" onclick="toggleDetails(${index})" title="View full details">
-                <i class="fas fa-chevron-down"></i>
-              </button>
+            <div class="registration-details" id="details-${index}">
+              <div class="row">
+                <div class="col-md-6">
+                  <p class="mb-1"><strong>Email:</strong> ${reg.studentEmail}</p>
+                  <p class="mb-1"><strong>Department:</strong> ${reg.studentDept}</p>
+                </div>
+                <div class="col-md-6">
+                  <p class="mb-1"><strong>Semester:</strong> ${reg.studentSemester}</p>
+                  <p class="mb-1"><strong>Registered:</strong> ${reg.registeredAt.toLocaleString()}</p>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-        <div class="registration-details" id="details-${index}">
-          <div class="row">
-            <div class="col-md-6">
-              <p class="mb-1"><strong>Email:</strong> ${reg.studentEmail}</p>
-              <p class="mb-1"><strong>Department:</strong> ${reg.studentDept}</p>
-            </div>
-            <div class="col-md-6">
-              <p class="mb-1"><strong>Semester:</strong> ${reg.studentSemester}</p>
-              <p class="mb-1"><strong>Registered:</strong> ${reg.registeredAt.toLocaleString()}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    `;
-  });
+        `;
+      });
 
-  container.innerHTML = html;
-}
+      container.innerHTML = html;
+    }
 
-// Add approval functions to the window object
-window.approveRegistration = async function(studentEmail, registrationId, index) {
-  try {
-    await addDoc(collection(db, "approvals"), {
-      eventId: eventId,
-      studentEmail: studentEmail,
-      registrationId: registrationId,
-      approvedBy: auth.currentUser.uid,
-      approvedAt: new Date(),
-      status: 'approved'
-    });
-    
-    // Update UI
-    const registrationItem = document.querySelectorAll('.registration-item')[index];
-    registrationItem.classList.add('border-success');
-    
-    const badge = registrationItem.querySelector('.badge');
-    if (!badge) {
-      const phoneElement = registrationItem.querySelector('.text-muted small');
-      phoneElement.innerHTML += '<span class="badge bg-success ms-2"><i class="fas fa-check me-1"></i>Approved</span>';
-    }
-    
-    // Update button
-    const approveBtn = registrationItem.querySelector('.btn-success');
-    if (approveBtn) {
-      approveBtn.className = 'btn btn-danger btn-sm';
-      approveBtn.innerHTML = '<i class="fas fa-times"></i>';
-      approveBtn.setAttribute('onclick', `unapproveRegistration('${studentEmail}', '${registrationId}', ${index})`);
-      approveBtn.setAttribute('title', 'Unapprove Registration');
-    }
-    
-    alert('✅ Registration approved!');
-  } catch (error) {
-    console.error('Error approving registration:', error);
-    alert('❌ Failed to approve registration');
-  }
-};
-
-window.unapproveRegistration = async function(studentEmail, registrationId, index) {
-  try {
-    // Find and delete the approval document
-    const approvalQuery = query(
-      collection(db, "approvals"),
-      where("eventId", "==", eventId),
-      where("studentEmail", "==", studentEmail)
-    );
-    const approvalSnap = await getDocs(approvalQuery);
-    
-    const deletePromises = [];
-    approvalSnap.forEach(doc => {
-      deletePromises.push(deleteDoc(doc.ref));
-    });
-    
-    await Promise.all(deletePromises);
-    
-    // Update UI
-    const registrationItem = document.querySelectorAll('.registration-item')[index];
-    registrationItem.classList.remove('border-success');
-    
-    const badge = registrationItem.querySelector('.badge');
-    if (badge) {
-      badge.remove();
-    }
-    
-    // Update button
-    const unapproveBtn = registrationItem.querySelector('.btn-danger');
-    if (unapproveBtn) {
-      unapproveBtn.className = 'btn btn-success btn-sm';
-      unapproveBtn.innerHTML = '<i class="fas fa-check"></i>';
-      unapproveBtn.setAttribute('onclick', `approveRegistration('${studentEmail}', '${registrationId}', ${index})`);
-      unapproveBtn.setAttribute('title', 'Approve Registration');
-    }
-    
-    alert('✅ Registration unapproved!');
-  } catch (error) {
-    console.error('Error unapproving registration:', error);
-    alert('❌ Failed to unapprove registration');
-  }
-};
+    // Global function for toggling details
+    window.toggleDetails = function(index) {
+      const details = document.getElementById(`details-${index}`);
+      const button = event.currentTarget;
+      
+      if (details.classList.contains('show')) {
+        details.classList.remove('show');
+        button.textContent = 'V';
+        button.title = 'View full details';
+      } else {
+        details.classList.add('show');
+        button.textContent = '▲';
+        button.title = 'Hide details';
+      }
+    };
   </script>
 </body>
 </html>
