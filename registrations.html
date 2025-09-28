@@ -92,26 +92,25 @@
     }
 
     .btn-expand {
-      background: none;
-      border: 2px solid var(--dark-blue);
-      color: var(--dark-blue);
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: bold;
-      font-size: 1.2rem;
-      transition: all 0.3s ease;
-      cursor: pointer;
-    }
+  background: none;
+  border: 2px solid var(--dark-blue);
+  color: var(--dark-blue);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
 
-    .btn-expand:hover {
-      background: var(--dark-blue);
-      color: white;
-      transform: scale(1.1);
-    }
+.btn-expand:hover {
+  background: var(--dark-blue);
+  color: white;
+  transform: scale(1.1);
+}
 
     .empty-state {
       text-align: center;
@@ -305,70 +304,73 @@
     }
 
     function renderRegistrations(registrations) {
-      const container = document.getElementById("registrationsContainer");
-      
-      if (registrations.length === 0) {
-        container.innerHTML = `
-          <div class="empty-state">
-            <i class="fas fa-users-slash"></i>
-            <h4>No Registrations Yet</h4>
-            <p>No one has registered for this event yet.</p>
-          </div>
-        `;
-        return;
-      }
+  const container = document.getElementById("registrationsContainer");
+  
+  if (registrations.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <i class="fas fa-users-slash"></i>
+        <h4>No Registrations Yet</h4>
+        <p>No one has registered for this event yet.</p>
+      </div>
+    `;
+    return;
+  }
 
-      let html = '';
-      registrations.forEach((reg, index) => {
-        html += `
-          <div class="registration-item">
-            <div class="registration-header">
-              <div class="registration-basic">
-                <div>
-                  <h6 class="mb-1 fw-bold">${reg.studentName}</h6>
-                  <p class="mb-0 text-muted small">
-                    <i class="fas fa-phone me-1"></i>${reg.studentPhone}
-                  </p>
-                </div>
-                <button class="btn-expand" onclick="toggleDetails(${index})" title="View full details">
-                  V
-                </button>
-              </div>
+  let html = '';
+  registrations.forEach((reg, index) => {
+    html += `
+      <div class="registration-item">
+        <div class="registration-header">
+          <div class="registration-basic">
+            <div>
+              <h6 class="mb-1 fw-bold">${reg.studentName}</h6>
+              <p class="mb-0 text-muted small">
+                <i class="fas fa-phone me-1"></i>${reg.studentPhone}
+              </p>
             </div>
-            <div class="registration-details" id="details-${index}">
-              <div class="row">
-                <div class="col-md-6">
-                  <p class="mb-1"><strong>Email:</strong> ${reg.studentEmail}</p>
-                  <p class="mb-1"><strong>Department:</strong> ${reg.studentDept}</p>
-                </div>
-                <div class="col-md-6">
-                  <p class="mb-1"><strong>Semester:</strong> ${reg.studentSemester}</p>
-                  <p class="mb-1"><strong>Registered:</strong> ${reg.registeredAt.toLocaleString()}</p>
-                </div>
-              </div>
+            <button class="btn-expand" onclick="toggleDetails(${index})" title="View full details">
+              <i class="fas fa-chevron-down"></i>
+            </button>
+          </div>
+        </div>
+        <div class="registration-details" id="details-${index}">
+          <div class="row">
+            <div class="col-md-6">
+              <p class="mb-1"><strong>Email:</strong> ${reg.studentEmail}</p>
+              <p class="mb-1"><strong>Department:</strong> ${reg.studentDept}</p>
+            </div>
+            <div class="col-md-6">
+              <p class="mb-1"><strong>Semester:</strong> ${reg.studentSemester}</p>
+              <p class="mb-1"><strong>Registered:</strong> ${reg.registeredAt.toLocaleString()}</p>
             </div>
           </div>
-        `;
-      });
+        </div>
+      </div>
+    `;
+  });
 
-      container.innerHTML = html;
-    }
+  container.innerHTML = html;
+}
 
-    // Global function for toggling details
-    window.toggleDetails = function(index) {
-      const details = document.getElementById(`details-${index}`);
-      const button = event.currentTarget;
-      
-      if (details.classList.contains('show')) {
-        details.classList.remove('show');
-        button.textContent = 'V';
-        button.title = 'View full details';
-      } else {
-        details.classList.add('show');
-        button.textContent = '▲';
-        button.title = 'Hide details';
-      }
-    };
+// Update the toggle function to rotate the icon
+window.toggleDetails = function(index) {
+  const details = document.getElementById(`details-${index}`);
+  const button = event.currentTarget;
+  const icon = button.querySelector('i');
+  
+  if (details.classList.contains('show')) {
+    details.classList.remove('show');
+    icon.classList.remove('fa-chevron-up');
+    icon.classList.add('fa-chevron-down');
+    button.title = 'View full details';
+  } else {
+    details.classList.add('show');
+    icon.classList.remove('fa-chevron-down');
+    icon.classList.add('fa-chevron-up');
+    button.title = 'Hide details';
+  }
+};
   </script>
 </body>
 </html>
