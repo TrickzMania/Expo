@@ -558,7 +558,12 @@
           <p class="card-text text-muted small mb-3">${data.description || ""}</p>
           <div class="mt-auto">
             <ul class="list-unstyled small mb-3">
-              <li class="mb-1 text-muted"><strong>🗓 Date:</strong> ${data.date.toLocaleString()}</li>
+              <li class="mb-1 text-muted"><strong>🗓 Date:</strong> 
+  ${data.date?.toDate 
+      ? data.date.toDate().toLocaleString() 
+      : new Date(data.date).toLocaleString()}
+</li>
+
               <li class="mb-1 text-muted"><strong>⏱ Duration:</strong> ${data.duration || 60} min</li>
               <li class="text-muted"><strong>🗣 Organizer:</strong> ${data.organizer || "N/A"}</li>
             </ul>
