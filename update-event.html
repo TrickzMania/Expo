@@ -231,8 +231,9 @@
           document.getElementById("externalLink").value = currentEvent.externalLink || "";
           
           // Set date (convert to local datetime string)
-          const eventDate = currentEvent.date?.toDate ? currentEvent.date.toDate() : new Date(currentEvent.date);
-          document.getElementById("date").value = eventDate.toISOString().slice(0, 16);
+         const localDate = new Date(eventDate.getTime() - eventDate.getTimezoneOffset() * 60000);
+document.getElementById("date").value = localDate.toISOString().slice(0, 16);
+
           
           document.getElementById("duration").value = currentEvent.duration || 60;
 
