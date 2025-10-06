@@ -207,6 +207,60 @@
       padding: 0.4rem 0.8rem; /* Made padding smaller to fit better */
       font-size: 0.85rem;
     }
+
+    /* --- FEEDBACK SECTION STYLES --- */
+    .feedback-card {
+      background: white;
+      border-radius: 1rem;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      border-left: 4px solid var(--dark-blue);
+      transition: transform 0.3s ease;
+    }
+    .feedback-card:hover {
+      transform: translateY(-3px);
+    }
+    .feedback-header {
+      display: flex;
+      justify-content: between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+    .feedback-event-title {
+      font-weight: 600;
+      color: var(--dark-blue);
+      margin: 0;
+    }
+    .feedback-list {
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    .feedback-item {
+      padding: 1rem;
+      border-bottom: 1px solid #eee;
+      background: #f8f9fa;
+      border-radius: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .feedback-item:last-child {
+      border-bottom: none;
+      margin-bottom: 0;
+    }
+    .feedback-user {
+      font-weight: 600;
+      color: var(--dark-blue);
+      margin-bottom: 0.25rem;
+    }
+    .feedback-text {
+      color: #555;
+      margin-bottom: 0.5rem;
+      line-height: 1.4;
+    }
+    .feedback-date {
+      font-size: 0.8rem;
+      color: #888;
+    }
   </style>
 </head>
 <body>
@@ -297,23 +351,29 @@
         </div>
       </div>
     </div>
-  </div>
-  <!-- Add this new section before footer in dashboard.html -->
-<div class="section-card">
-  <div class="d-flex justify-content-between align-items-center">
-    <h3 class="section-title">
-      <i class="fas fa-comments"></i> Feedback
-    </h3>
-  </div>
-  <div class="row g-4">
-    <div class="col-12 text-center">
-      <p class="text-muted mb-3">See what participants are saying about your events</p>
-      <a href="showfeedback.html" class="btn btn-view btn-lg">
-        <i class="fas fa-eye me-2"></i> View Feedback
-      </a>
+
+    <!-- Fixed Feedback Section -->
+    <div class="section-card">
+      <div class="d-flex justify-content-between align-items-center">
+        <h3 class="section-title">
+          <i class="fas fa-comments"></i> Recent Feedback
+        </h3>
+        <a href="showfeedback.html" class="btn btn-view">
+          <i class="fas fa-eye me-2"></i> View All Feedback
+        </a>
+      </div>
+      <div id="feedbackContainer" class="row g-4">
+        <div class="col-12">
+          <div class="text-center">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Loading feedback...</span>
+            </div>
+            <p class="mt-2 text-muted">Loading feedback...</p>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
-</div>
 
   <footer class="text-white py-4 mt-auto" style="background: linear-gradient(135deg, #1a237e, #4a148c);">
     <div class="container">
@@ -334,7 +394,7 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-    import { getFirestore, collection, getDocs, query, where, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, query, where, doc, getDoc, orderBy, limit } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
     import { getStarred } from "./userData.js";
 
@@ -353,6 +413,7 @@
 
     const starredContainer = document.getElementById("starredContainer");
     const createdContainer = document.getElementById("createdContainer");
+    const feedbackContainer = document.getElementById("feedbackContainer");
     const logoutBtn = document.getElementById("logoutBtn");
     const starredCount = document.getElementById("starredCount");
     const createdCount = document.getElementById("createdCount");
@@ -369,14 +430,13 @@
         return;
       }
 
-      // Hide the default Logout button provided in the static HTML for flexibility
       document.querySelector('.navbar .btn-nav-logout').classList.remove('d-none');
       
       console.log("Loading dashboard for user:", user.uid);
       await loadDashboardData(user.uid);
     });
 
-        async function loadDashboardData(userId) {
+    async function loadDashboardData(userId) {
       try {
         const starredIds = await getStarred(userId);
         starredCount.textContent = starredIds.length;
@@ -391,14 +451,13 @@
         const registrationsSnap = await getDocs(registrationsQuery);
         registeredCount.textContent = registrationsSnap.size;
 
-        // ✅ New: Load feedback section
+        // Load feedback section
         await renderFeedback(userId);
 
       } catch (error) {
         console.error("Error loading dashboard data:", error);
       }
     }
-
 
     async function renderStarredEvents(starredIds) {
       starredContainer.innerHTML = "";
@@ -448,12 +507,12 @@
         renderEventCard(event, docSnap.id, createdContainer, true, false);
       });
     }
-        async function renderFeedback(userId) {
-      const feedbackContainer = document.getElementById("feedbackContainer");
+
+    async function renderFeedback(userId) {
       feedbackContainer.innerHTML = "";
 
       try {
-        // Step 1: Get events created by this user
+        // Get events created by this user
         const createdQuery = query(collection(db, "events"), where("creatorId", "==", userId));
         const createdSnap = await getDocs(createdQuery);
 
@@ -463,57 +522,118 @@
               <div class="empty-state">
                 <i class="far fa-comments"></i>
                 <h4>No Events Found</h4>
-                <p>You haven’t created any events yet, so no feedback available.</p>
+                <p>You haven't created any events yet, so no feedback available.</p>
               </div>
             </div>`;
           return;
         }
 
-        // Step 2: For each event, check feedback
+        let allFeedback = [];
+        
+        // Get recent feedback for user's events
         for (const docSnap of createdSnap.docs) {
           const event = docSnap.data();
           const eventId = docSnap.id;
 
-          const feedbackQuery = query(collection(db, "feedback"), where("eventId", "==", eventId));
+          const feedbackQuery = query(
+            collection(db, "feedbacks"), 
+            where("eventId", "==", eventId),
+            orderBy("submittedAt", "desc"),
+            limit(5)
+          );
+          
           const feedbackSnap = await getDocs(feedbackQuery);
 
-          if (feedbackSnap.empty) continue;
-
-          let feedbackList = "";
           feedbackSnap.forEach((fbDoc) => {
             const fb = fbDoc.data();
-            const fbDate = fb.createdAt?.toDate ? fb.createdAt.toDate().toLocaleString() : "Unknown time";
-            feedbackList += `
-              <li class="list-group-item">
-                <strong>${fb.userName || "Anonymous"}:</strong> ${fb.feedback}
-                <br><small class="text-muted">Submitted on ${fbDate}</small>
-              </li>`;
+            allFeedback.push({
+              ...fb,
+              id: fbDoc.id,
+              eventTitle: event.title,
+              eventId: eventId
+            });
           });
-
-          feedbackContainer.innerHTML += `
-            <div class="col-md-6">
-              <div class="card shadow-sm">
-                <div class="card-body">
-                  <h5 class="card-title"><i class="fas fa-calendar-check"></i> ${event.title}</h5>
-                  <p class="card-text">Feedback received:</p>
-                  <ul class="list-group list-group-flush">${feedbackList}</ul>
-                </div>
-              </div>
-            </div>`;
         }
 
-        if (feedbackContainer.innerHTML === "") {
+        // Sort all feedback by date (newest first) and take top 6
+        allFeedback.sort((a, b) => {
+          const dateA = a.submittedAt?.toDate ? a.submittedAt.toDate() : new Date();
+          const dateB = b.submittedAt?.toDate ? b.submittedAt.toDate() : new Date();
+          return dateB - dateA;
+        });
+
+        allFeedback = allFeedback.slice(0, 6);
+
+        if (allFeedback.length === 0) {
           feedbackContainer.innerHTML = `
             <div class="col-12">
               <div class="empty-state">
                 <i class="far fa-comments"></i>
                 <h4>No Feedback Yet</h4>
-                <p>Your events don’t have feedback entries yet.</p>
+                <p>Your events don't have any feedback yet.</p>
               </div>
             </div>`;
+          return;
         }
+
+        // Group feedback by event
+        const feedbackByEvent = {};
+        allFeedback.forEach(fb => {
+          if (!feedbackByEvent[fb.eventId]) {
+            feedbackByEvent[fb.eventId] = {
+              eventTitle: fb.eventTitle,
+              feedbacks: []
+            };
+          }
+          feedbackByEvent[fb.eventId].feedbacks.push(fb);
+        });
+
+        // Render feedback cards
+        Object.entries(feedbackByEvent).forEach(([eventId, eventData]) => {
+          const feedbackCard = `
+            <div class="col-md-6 col-lg-4">
+              <div class="feedback-card">
+                <div class="feedback-header">
+                  <h6 class="feedback-event-title">
+                    <i class="fas fa-calendar-check me-2"></i>${eventData.eventTitle}
+                  </h6>
+                </div>
+                <div class="feedback-list">
+                  ${eventData.feedbacks.map(fb => {
+                    const feedbackDate = fb.submittedAt?.toDate ? 
+                      fb.submittedAt.toDate().toLocaleDateString() : "Unknown date";
+                    
+                    return `
+                      <div class="feedback-item">
+                        <div class="feedback-user">
+                          <i class="fas fa-user me-1"></i>${fb.userName || "Anonymous"}
+                        </div>
+                        <div class="feedback-text">
+                          ${fb.comments || "No comments provided"}
+                        </div>
+                        <div class="feedback-date">
+                          <i class="far fa-clock me-1"></i>${feedbackDate}
+                        </div>
+                      </div>
+                    `;
+                  }).join('')}
+                </div>
+              </div>
+            </div>
+          `;
+          feedbackContainer.innerHTML += feedbackCard;
+        });
+
       } catch (err) {
         console.error("Error loading feedback:", err);
+        feedbackContainer.innerHTML = `
+          <div class="col-12">
+            <div class="empty-state">
+              <i class="fas fa-exclamation-triangle"></i>
+              <h4>Error Loading Feedback</h4>
+              <p>Please try again later.</p>
+            </div>
+          </div>`;
       }
     }
 
