@@ -178,6 +178,15 @@
       margin-bottom: 1rem;
     }
 
+    .event-status {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid #eee;
+    }
+
     @media screen and (max-width: 768px) {
       .timeline::after {
         left: 31px;
@@ -219,8 +228,8 @@
 
   <div class="header-section">
     <div class="container">
-      <h1 class="display-5 fw-bold">Event Schedule</h1>
-      <p class="lead mb-0">Your personal event roadmap - Chronological view of upcoming events</p>
+      <h1 class="display-5 fw-bold">Starred Events Roadmap</h1>
+      <p class="lead mb-0">Your personal event timeline - View all your starred events</p>
     </div>
   </div>
 
@@ -239,6 +248,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
     import { getFirestore, collection, getDocs, query, where, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+    import { getStarred } from "./userData.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyD2iuNpJI0p1TSA_MdJ-9SNuE6QqeZJRt8",
@@ -258,122 +268,65 @@
         window.location.href = "index.html";
         return;
       }
-      await loadEventSchedule(user);
+      await loadStarredEventsSchedule(user);
     });
 
-    async function loadEventSchedule(user) {
-  try {
-    console.log("Loading events for user:", user.email);
-    
-    // Get user's registrations using their email
-    const registrationsQuery = query(
-      collection(db, "registrations"), 
-      where("studentEmail", "==", user.email)
-    );
-    
-    const registrationsSnap = await getDocs(registrationsQuery);
-    const upcomingEvents = [];
-
-    // Get event details and filter out past events
-    const now = new Date();
-    
-    for (const docSnap of registrationsSnap.docs) {
-      const registration = docSnap.data();
-      console.log("Found registration:", registration);
-      
-      const eventDoc = await getDoc(doc(db, "events", registration.eventId));
-      
-      if (eventDoc.exists()) {
-        const event = eventDoc.data();
-        const eventDate = event.date?.toDate ? event.date.toDate() : new Date(event.date);
+    async function loadStarredEventsSchedule(user) {
+      try {
+        console.log("Loading starred events for user:", user.uid);
         
-        console.log("Event date:", eventDate, "Now:", now);
+        // Get user's starred events
+        const starredEventIds = await getStarred(user.uid);
+        console.log("Starred event IDs:", starredEventIds);
         
-        // Only include future events
-        if (eventDate >= now) {
-          // Check approval status
-          const approvalQuery = query(
-            collection(db, "approvals"),
-            where("eventId", "==", registration.eventId),
-            where("studentEmail", "==", user.email)
-          );
-          const approvalSnap = await getDocs(approvalQuery);
-          const isApproved = !approvalSnap.empty;
+        const starredEvents = [];
 
-          upcomingEvents.push({
-            ...event,
-            id: eventDoc.id,
-            date: eventDate,
-            isApproved: isApproved,
-            registrationDate: registration.registeredAt?.toDate ? registration.registeredAt.toDate() : new Date(registration.registeredAt)
-          });
+        // Get event details for each starred event
+        for (const eventId of starredEventIds) {
+          const eventDoc = await getDoc(doc(db, "events", eventId));
+          
+          if (eventDoc.exists()) {
+            const event = eventDoc.data();
+            const eventDate = event.date?.toDate ? event.date.toDate() : new Date(event.date);
+            
+            starredEvents.push({
+              ...event,
+              id: eventDoc.id,
+              date: eventDate
+            });
+          }
         }
+
+        console.log("Starred events found:", starredEvents.length);
+        
+        // Sort events by date
+        starredEvents.sort((a, b) => a.date - b.date);
+        
+        // Render timeline
+        renderTimeline(starredEvents);
+
+      } catch (error) {
+        console.error("Error loading starred events schedule:", error);
+        document.getElementById("timelineContainer").innerHTML = `
+          <div class="empty-state">
+            <i class="fas fa-exclamation-triangle"></i>
+            <h4>Error Loading Schedule</h4>
+            <p>${error.message}</p>
+            <a href="dashboard.html" class="btn btn-primary">Go to Dashboard</a>
+          </div>
+        `;
       }
     }
 
-    console.log("Upcoming events found:", upcomingEvents.length);
-    
-    // Sort events by date
-    upcomingEvents.sort((a, b) => a.date - b.date);
-    
-    // Render timeline
-    renderTimeline(upcomingEvents);
-
-  } catch (error) {
-    console.error("Error loading event schedule:", error);
-    document.getElementById("timelineContainer").innerHTML = `
-      <div class="empty-state">
-        <i class="fas fa-exclamation-triangle"></i>
-        <h4>Error Loading Schedule</h4>
-        <p>${error.message}</p>
-        <a href="dashboard.html" class="btn btn-primary">Go to Dashboard</a>
-      </div>
-    `;
-  }
-}
-
-
-// Add this function to map.html for debugging
-async function debugRegistrations(user) {
-  console.log("=== DEBUG REGISTRATIONS ===");
-  console.log("User email:", user.email);
-  
-  const registrationsQuery = query(
-    collection(db, "registrations"), 
-    where("studentEmail", "==", user.email)
-  );
-  
-  const registrationsSnap = await getDocs(registrationsQuery);
-  console.log("Total registrations found:", registrationsSnap.size);
-  
-  registrationsSnap.forEach(doc => {
-    console.log("Registration:", doc.data());
-  });
-  console.log("=== END DEBUG ===");
-}
-
-// Call it in onAuthStateChanged
-onAuthStateChanged(auth, async (user) => {
-  if (!user) {
-    window.location.href = "index.html";
-    return;
-  }
-  
-  // Debug first
-  await debugRegistrations(user);
-  
-  // Then load schedule
-  await loadEventSchedule(user);
-});
     function renderTimeline(events) {
       const container = document.getElementById("timelineContainer");
       
       if (events.length === 0) {
         container.innerHTML = `
           <div class="empty-state">
-            <i class="fas fa-calendar-plus"></i>
-            <h4>No Upcoming Events</h4>
-            <p>Register for events to see them in your schedule!</p>
+            <i class="fas fa-star"></i>
+            <h4>No Starred Events</h4>
+            <p>Star events you're interested in to see them in your roadmap!</p>
             <a href="index.html" class="btn btn-primary">Browse Events</a>
           </div>
         `;
@@ -391,24 +344,28 @@ onAuthStateChanged(auth, async (user) => {
       const nextMonth = new Date(now);
       nextMonth.setMonth(nextMonth.getMonth() + 1);
 
-      const todayEvents = events.filter(event => 
+      // Filter out past events
+      const upcomingEvents = events.filter(event => event.date >= now);
+      const pastEvents = events.filter(event => event.date < now);
+
+      const todayEvents = upcomingEvents.filter(event => 
         event.date.toDateString() === now.toDateString()
       );
       
-      const tomorrowEvents = events.filter(event => 
+      const tomorrowEvents = upcomingEvents.filter(event => 
         event.date.toDateString() === tomorrow.toDateString()
       );
       
-      const thisWeekEvents = events.filter(event => 
+      const thisWeekEvents = upcomingEvents.filter(event => 
         event.date > now && event.date <= nextWeek && 
         !todayEvents.includes(event) && !tomorrowEvents.includes(event)
       );
       
-      const thisMonthEvents = events.filter(event => 
+      const thisMonthEvents = upcomingEvents.filter(event => 
         event.date > nextWeek && event.date <= nextMonth
       );
       
-      const futureEvents = events.filter(event => 
+      const futureEvents = upcomingEvents.filter(event => 
         event.date > nextMonth
       );
 
@@ -434,14 +391,14 @@ onAuthStateChanged(auth, async (user) => {
                       ${event.location ? `<br><i class="fas fa-map-marker-alt me-1"></i>${event.location}` : ''}
                       ${event.isOnline ? '<br><i class="fas fa-globe me-1"></i>Online Event' : ''}
                     </div>
-                    <div class="d-flex justify-content-between align-items-center">
-                      <span class="badge ${event.isApproved ? 'bg-success' : 'bg-warning text-dark'}">
-                        <i class="fas ${event.isApproved ? 'fa-check-circle' : 'fa-clock'} me-1"></i>
-                        ${event.isApproved ? 'Confirmed' : 'Pending'}
+                    <div class="event-status">
+                      <span class="badge bg-info">
+                        <i class="fas fa-star me-1"></i>
+                        Starred
                       </span>
                       <a href="register.html?eventId=${event.id}&title=${encodeURIComponent(event.title)}" 
                          class="btn btn-sm btn-outline-primary">
-                        Details
+                        View Details
                       </a>
                     </div>
                   </div>
@@ -452,11 +409,48 @@ onAuthStateChanged(auth, async (user) => {
         `;
       };
 
-      html += renderEventGroup('📅 Today', todayEvents);
-      html += renderEventGroup('🚀 Tomorrow', tomorrowEvents);
-      html += renderEventGroup('📋 This Week', thisWeekEvents);
-      html += renderEventGroup('📅 This Month', thisMonthEvents);
-      html += renderEventGroup('🔮 Future Events', futureEvents);
+      // Render upcoming events
+      html += renderEventGroup('⭐ Today', todayEvents);
+      html += renderEventGroup('⭐ Tomorrow', tomorrowEvents);
+      html += renderEventGroup('⭐ This Week', thisWeekEvents);
+      html += renderEventGroup('⭐ This Month', thisMonthEvents);
+      html += renderEventGroup('⭐ Future Events', futureEvents);
+
+      // Render past events if any
+      if (pastEvents.length > 0) {
+        html += `
+          <div class="time-group">
+            <h3 class="time-group-title" style="background: #6c757d;">📚 Past Starred Events</h3>
+            <div class="timeline">
+              ${pastEvents.map((event, index) => `
+                <div class="timeline-item ${index % 2 === 0 ? 'left' : 'right'}">
+                  <div class="timeline-content" style="opacity: 0.7;">
+                    <div class="event-date" style="color: #6c757d;">
+                      ${formatDate(event.date)}
+                    </div>
+                    <div class="event-title">${event.title}</div>
+                    <div class="event-meta">
+                      <i class="far fa-clock me-1"></i>${event.date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                      ${event.location ? `<br><i class="fas fa-map-marker-alt me-1"></i>${event.location}` : ''}
+                      ${event.isOnline ? '<br><i class="fas fa-globe me-1"></i>Online Event' : ''}
+                    </div>
+                    <div class="event-status">
+                      <span class="badge bg-secondary">
+                        <i class="fas fa-history me-1"></i>
+                        Past Event
+                      </span>
+                      <a href="feedback.html?eventId=${event.id}&title=${encodeURIComponent(event.title)}" 
+                         class="btn btn-sm btn-outline-secondary">
+                        Give Feedback
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }
 
       container.innerHTML = html;
     }
