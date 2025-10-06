@@ -360,28 +360,29 @@
       await loadDashboardData(user.uid);
     });
 
-    async function loadDashboardData(userId) {
+        async function loadDashboardData(userId) {
       try {
-        // Load starred events
         const starredIds = await getStarred(userId);
         starredCount.textContent = starredIds.length;
         await renderStarredEvents(starredIds);
 
-        // Load created events
         const createdQuery = query(collection(db, "events"), where("creatorId", "==", userId));
         const createdSnap = await getDocs(createdQuery);
         createdCount.textContent = createdSnap.size;
         await renderCreatedEvents(createdSnap.docs);
 
-        // Load registrations count
         const registrationsQuery = query(collection(db, "registrations"), where("studentEmail", "==", auth.currentUser.email));
         const registrationsSnap = await getDocs(registrationsQuery);
         registeredCount.textContent = registrationsSnap.size;
+
+        // ✅ New: Load feedback section
+        await renderFeedback(userId);
 
       } catch (error) {
         console.error("Error loading dashboard data:", error);
       }
     }
+
 
     async function renderStarredEvents(starredIds) {
       starredContainer.innerHTML = "";
@@ -430,6 +431,74 @@
         const event = docSnap.data();
         renderEventCard(event, docSnap.id, createdContainer, true, false);
       });
+    }
+        async function renderFeedback(userId) {
+      const feedbackContainer = document.getElementById("feedbackContainer");
+      feedbackContainer.innerHTML = "";
+
+      try {
+        // Step 1: Get events created by this user
+        const createdQuery = query(collection(db, "events"), where("creatorId", "==", userId));
+        const createdSnap = await getDocs(createdQuery);
+
+        if (createdSnap.empty) {
+          feedbackContainer.innerHTML = `
+            <div class="col-12">
+              <div class="empty-state">
+                <i class="far fa-comments"></i>
+                <h4>No Events Found</h4>
+                <p>You haven’t created any events yet, so no feedback available.</p>
+              </div>
+            </div>`;
+          return;
+        }
+
+        // Step 2: For each event, check feedback
+        for (const docSnap of createdSnap.docs) {
+          const event = docSnap.data();
+          const eventId = docSnap.id;
+
+          const feedbackQuery = query(collection(db, "feedback"), where("eventId", "==", eventId));
+          const feedbackSnap = await getDocs(feedbackQuery);
+
+          if (feedbackSnap.empty) continue;
+
+          let feedbackList = "";
+          feedbackSnap.forEach((fbDoc) => {
+            const fb = fbDoc.data();
+            const fbDate = fb.createdAt?.toDate ? fb.createdAt.toDate().toLocaleString() : "Unknown time";
+            feedbackList += `
+              <li class="list-group-item">
+                <strong>${fb.userName || "Anonymous"}:</strong> ${fb.feedback}
+                <br><small class="text-muted">Submitted on ${fbDate}</small>
+              </li>`;
+          });
+
+          feedbackContainer.innerHTML += `
+            <div class="col-md-6">
+              <div class="card shadow-sm">
+                <div class="card-body">
+                  <h5 class="card-title"><i class="fas fa-calendar-check"></i> ${event.title}</h5>
+                  <p class="card-text">Feedback received:</p>
+                  <ul class="list-group list-group-flush">${feedbackList}</ul>
+                </div>
+              </div>
+            </div>`;
+        }
+
+        if (feedbackContainer.innerHTML === "") {
+          feedbackContainer.innerHTML = `
+            <div class="col-12">
+              <div class="empty-state">
+                <i class="far fa-comments"></i>
+                <h4>No Feedback Yet</h4>
+                <p>Your events don’t have feedback entries yet.</p>
+              </div>
+            </div>`;
+        }
+      } catch (err) {
+        console.error("Error loading feedback:", err);
+      }
     }
 
     function renderEventCard(event, eventId, container, isCreated = false, registration = null) {
