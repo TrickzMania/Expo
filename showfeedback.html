@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Feedback</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <style>
+    body { font-family: Poppins, sans-serif; background: #f8f9fa; padding: 2rem; }
+    .feedback-card { background: white; border-radius: 1rem; padding: 1rem 1.5rem; margin-bottom: 1rem; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1 class="mb-4"><i class="fas fa-comments"></i> Event Feedback</h1>
+    <div id="feedbackContainer"></div>
+    <a href="dashboard.html" class="btn btn-secondary mt-3">⬅ Back to Dashboard</a>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+    import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyD2iuNpJI0p1TSA_MdJ-9SNuE6QqeZJRt8",
+      authDomain: "lostandfound-f64d1.firebaseapp.com",
+      projectId: "lostandfound-f64d1",
+      storageBucket: "lostandfound-f64d1.appspot.com",
+      messagingSenderId: "226765931514",
+      appId: "1:226765931514:web:4b3ba5d6288e0273c05a43"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const feedbackContainer = document.getElementById("feedbackContainer");
+
+    // Read eventId from URL (optional filtering)
+    const urlParams = new URLSearchParams(window.location.search);
+    const eventId = urlParams.get("eventId");
+
+    async function loadFeedback() {
+      feedbackContainer.innerHTML = "<p>Loading feedback...</p>";
+
+      let q;
+      if (eventId) {
+        q = query(collection(db, "feedback"), where("eventId", "==", eventId));
+      } else {
+        q = collection(db, "feedback");
+      }
+
+      const snap = await getDocs(q);
+      feedbackContainer.innerHTML = "";
+
+      if (snap.empty) {
+        feedbackContainer.innerHTML = `<p class="text-muted">No feedback available yet.</p>`;
+        return;
+      }
+
+      snap.forEach(docSnap => {
+        const fb = docSnap.data();
+        feedbackContainer.innerHTML += `
+          <div class="feedback-card">
+            <h5>${fb.eventTitle || "Untitled Event"}</h5>
+            <p>${fb.message || "No message"}</p>
+            <small class="text-muted">By: ${fb.user || "Anonymous"} on ${fb.timestamp?.toDate().toLocaleString() || ""}</small>
+          </div>
+        `;
+      });
+    }
+
+    loadFeedback();
+  </script>
+</body>
+</html>
