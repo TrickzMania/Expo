@@ -3,38 +3,334 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Event Feedback</title>
+  <title>View Feedback</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
   <style>
-    body { background: #f8f9fa; }
-    .card { border-radius: 15px; }
-    .feedback-card { margin-bottom: 20px; }
-    .feedback-list { max-height: 250px; overflow-y: auto; }
-    .feedback-item { padding: 10px; border-bottom: 1px solid #ddd; }
+    :root {
+      --dark-blue: #1a237e;
+      --light-gray: #f0f2f5;
+      --primary-gradient: linear-gradient(45deg, #1a237e, #4a148c);
+      --secondary-gradient: linear-gradient(45deg, #6a11cb, #2575fc);
+    }
+    
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: var(--light-gray);
+      padding-top: 5rem;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* --- NAVIGATION BAR STYLES --- */
+    .navbar {
+      background-color: var(--dark-blue) !important;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      position: fixed;
+      width: 100%;
+      top: 0;
+      z-index: 1030;
+    }
+    .navbar-brand {
+      font-weight: 700;
+      color: #fff !important;
+    }
+    .navbar-nav {
+      align-items: center; 
+    }
+    .btn-nav-logout {
+      background-color: #dc3545;
+      border: none;
+      color: white;
+      border-radius: 50px;
+      padding: 0.5rem 1.5rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+    .btn-nav-logout:hover {
+      background-color: #c82333;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    /* --- HEADER STYLES --- */
+    .dashboard-header {
+      background: var(--primary-gradient);
+      color: white;
+      padding: 5rem 0 3rem;
+      border-bottom-left-radius: 60px;
+      border-bottom-right-radius: 60px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      margin-bottom: 3rem;
+    }
+    .dashboard-header h1 {
+      font-weight: 700;
+      font-size: 3rem;
+    }
+
+    /* --- SECTION AND CARD STYLES --- */
+    .section-card {
+      background: #fff;
+      border-radius: 1.5rem;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      padding: 2.5rem;
+      margin-bottom: 2rem;
+      border: none;
+    }
+    .section-title {
+      color: var(--dark-blue);
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+      font-size: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* --- FEEDBACK CARD STYLES --- */
+    .feedback-item {
+      border-left: 4px solid var(--dark-blue);
+      border-radius: 0.5rem;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      margin-bottom: 1.5rem;
+      background: white;
+    }
+    .feedback-item:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+    .feedback-item .card-body {
+      padding: 1.5rem;
+    }
+    .feedback-event {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--dark-blue);
+      margin-bottom: 0.5rem;
+    }
+    .feedback-rating {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 50px;
+      font-weight: 500;
+      margin-bottom: 1rem;
+    }
+    .rating-excellent {
+      background-color: #d4edda;
+      color: #155724;
+    }
+    .rating-good {
+      background-color: #d1ecf1;
+      color: #0c5460;
+    }
+    .rating-acceptable {
+      background-color: #fff3cd;
+      color: #856404;
+    }
+    .rating-poor {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+    .feedback-content {
+      font-size: 1rem;
+      line-height: 1.5;
+      margin-bottom: 1rem;
+    }
+    .feedback-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+      color: #888;
+      border-top: 1px solid #eee;
+      padding-top: 0.75rem;
+    }
+    
+    /* --- BUTTON STYLES --- */
+    .btn-view {
+      background: var(--secondary-gradient);
+      border: none;
+      color: white;
+      border-radius: 50px;
+      padding: 0.5rem 1rem;
+      font-weight: 500;
+      font-size: 0.9rem;
+      transition: all 0.3s ease;
+    }
+    .btn-view:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    /* --- EMPTY STATE STYLES --- */
+    .empty-state {
+      text-align: center;
+      padding: 5rem 2rem;
+      color: #666;
+    }
+    .empty-state i {
+      font-size: 3rem;
+      color: #ccc;
+      margin-bottom: 1rem;
+    }
+
+    /* --- FILTER STYLES --- */
+    .filter-container {
+      background: white;
+      border-radius: 1rem;
+      padding: 1.5rem;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+      margin-bottom: 2rem;
+    }
+    .filter-title {
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: var(--dark-blue);
+    }
+    
+    /* --- STATS STYLES --- */
+    .stats-card {
+      background: white;
+      border-radius: 1rem;
+      padding: 1.5rem;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+      text-align: center;
+      transition: transform 0.3s ease;
+      border-left: 4px solid var(--dark-blue);
+      margin-bottom: 1.5rem;
+    }
+    .stats-card:hover {
+      transform: translateY(-5px);
+    }
+    .stats-number {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--dark-blue);
+      margin-bottom: 0.5rem;
+    }
   </style>
 </head>
 <body>
-  <!-- Navbar -->
-  <nav class="navbar navbar-dark bg-dark">
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container">
-      <a class="navbar-brand" href="dashboard.html">📅 Event Tracker</a>
+      <a class="navbar-brand" href="index.html">📅 Event Tracker</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+          <li class="nav-item"><a class="nav-link" href="post.html">Add Event</a></li>
+          <li class="nav-item"><a class="nav-link" href="dashboard.html">Dashboard</a></li>
+          <li class="nav-item"><a class="nav-link active" href="showfeedback.html">Feedback</a></li>
+          <li class="nav-item">
+            <button id="logoutBtn" class="btn btn-nav-logout ms-3">Logout</button>
+          </li>
+        </ul>
+      </div>
     </div>
   </nav>
 
-  <!-- Container -->
-  <div class="container my-5">
-    <h2 class="mb-4 text-center"><i class="fas fa-comments"></i> Feedback for Your Events</h2>
-    <div id="feedbackContainer" class="row g-4"></div>
+  <div class="dashboard-header">
+    <div class="container">
+      <h1 class="fw-bold">Event Feedback</h1>
+      <p class="lead mb-0">See what participants are saying about your events</p>
+    </div>
   </div>
 
-  <!-- Firebase Script -->
+  <div class="container my-5 flex-grow-1">
+    <!-- Stats Section -->
+    <div class="row g-4 mb-5">
+      <div class="col-md-4">
+        <div class="stats-card">
+          <div class="stats-number" id="totalFeedbackCount">0</div>
+          <div class="stats-label">Total Feedback</div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="stats-card">
+          <div class="stats-number" id="eventCount">0</div>
+          <div class="stats-label">Events with Feedback</div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="stats-card">
+          <div class="stats-number" id="averageRating">0</div>
+          <div class="stats-label">Average Rating</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="filter-container">
+      <h3 class="filter-title">Filter Feedback</h3>
+      <div class="row">
+        <div class="col-md-6">
+          <div class="mb-3">
+            <label for="eventFilter" class="form-label">Filter by Event</label>
+            <select class="form-select" id="eventFilter">
+              <option value="all">All Events</option>
+              <!-- Event options will be populated dynamically -->
+            </select>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="mb-3">
+            <label for="ratingFilter" class="form-label">Filter by Rating</label>
+            <select class="form-select" id="ratingFilter">
+              <option value="all">All Ratings</option>
+              <option value="Excellent">Excellent</option>
+              <option value="Good">Good</option>
+              <option value="Acceptable">Acceptable</option>
+              <option value="Poor">Poor</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Feedback Section -->
+    <div class="section-card">
+      <div class="d-flex justify-content-between align-items-center">
+        <h3 class="section-title">
+          <i class="fas fa-comments"></i> All Feedback
+        </h3>
+        <span id="feedbackCount" class="badge bg-primary">0 feedbacks</span>
+      </div>
+      <div id="feedbackContainer"></div>
+    </div>
+  </div>
+
+  <footer class="text-white py-4 mt-auto" style="background: linear-gradient(135deg, #1a237e, #4a148c);">
+    <div class="container">
+      <div class="row align-items-center">
+        <div class="col-md-8">
+          <p class="mb-1 fw-bold">📅 Smart Campus Event Tracker</p>
+          <small class="text-light opacity-75">Streamlining campus event management and participation</small>
+        </div>
+        <div class="col-md-4 text-md-end">
+          <p class="mb-0 text-light opacity-75 small">
+            &copy; 2025 All Rights Reserved
+          </p>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
-    import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
+    import { getFirestore, collection, getDocs, query, where, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
 
-    // Firebase Config
     const firebaseConfig = {
       apiKey: "AIzaSyD2iuNpJI0p1TSA_MdJ-9SNuE6QqeZJRt8",
       authDomain: "lostandfound-f64d1.firebaseapp.com",
@@ -48,61 +344,213 @@
     const db = getFirestore(app);
     const auth = getAuth(app);
 
+    const logoutBtn = document.getElementById("logoutBtn");
     const feedbackContainer = document.getElementById("feedbackContainer");
+    const feedbackCount = document.getElementById("feedbackCount");
+    const eventFilter = document.getElementById("eventFilter");
+    const ratingFilter = document.getElementById("ratingFilter");
+    const totalFeedbackCount = document.getElementById("totalFeedbackCount");
+    const eventCount = document.getElementById("eventCount");
+    const averageRating = document.getElementById("averageRating");
+
+    logoutBtn.addEventListener("click", () => {
+      signOut(auth);
+      window.location.href = "index.html";
+    });
 
     onAuthStateChanged(auth, async (user) => {
       if (!user) {
-        window.location.href = "index.html"; // redirect if not logged in
+        window.location.href = "index.html";
         return;
       }
-      await loadFeedback(user.uid);
+
+      console.log("Loading feedback for user:", user.uid);
+      await loadFeedbackData(user.uid);
     });
 
-    async function loadFeedback(userId) {
-      feedbackContainer.innerHTML = "";
-
-      // 1. Get events created by this user
-      const eventsQuery = query(collection(db, "events"), where("creatorId", "==", userId));
-      const eventsSnap = await getDocs(eventsQuery);
-
-      if (eventsSnap.empty) {
-        feedbackContainer.innerHTML = `<p class="text-center text-muted">You haven’t created any events yet.</p>`;
-        return;
-      }
-
-      // 2. Loop through each event and load feedback
-      for (const eventDoc of eventsSnap.docs) {
-        const event = eventDoc.data();
-        const eventId = eventDoc.id;
-
-        // Query feedback for this event
-        const fbQuery = query(collection(db, "feedback"), where("eventId", "==", eventId));
-        const fbSnap = await getDocs(fbQuery);
-
-        let feedbackHTML = "";
-        if (!fbSnap.empty) {
-          fbSnap.forEach((fbDoc) => {
-            const fb = fbDoc.data();
-            feedbackHTML += `
-              <div class="feedback-item">
-                <strong>${fb.userName || "Anonymous"}:</strong> ${fb.feedback}
-              </div>`;
-          });
-        } else {
-          feedbackHTML = `<p class="text-muted">No feedback yet for this event.</p>`;
+    async function loadFeedbackData(userId) {
+      try {
+        // Get events created by this user
+        const createdQuery = query(collection(db, "events"), where("creatorId", "==", userId));
+        const createdSnap = await getDocs(createdQuery);
+        
+        if (createdSnap.empty) {
+          showEmptyState("You haven't created any events yet.");
+          return;
         }
 
-        // Append card for each event
-        feedbackContainer.innerHTML += `
-          <div class="col-md-6">
-            <div class="card shadow-sm feedback-card">
-              <div class="card-body">
-                <h5 class="card-title"><i class="fas fa-calendar-check"></i> ${event.title}</h5>
-                <div class="feedback-list">${feedbackHTML}</div>
+        // Get all feedback for user's events
+        const allFeedback = [];
+        const eventMap = new Map();
+        
+        for (const docSnap of createdSnap.docs) {
+          const event = docSnap.data();
+          const eventId = docSnap.id;
+          eventMap.set(eventId, event);
+          
+          const feedbackQuery = query(collection(db, "feedbacks"), where("eventId", "==", eventId));
+          const feedbackSnap = await getDocs(feedbackQuery);
+          
+          feedbackSnap.forEach((fbDoc) => {
+            const fb = fbDoc.data();
+            fb.id = fbDoc.id;
+            fb.eventTitle = event.title;
+            allFeedback.push(fb);
+          });
+        }
+        
+        // Update stats
+        updateStats(allFeedback, eventMap);
+        
+        // Populate event filter dropdown
+        populateEventFilter(createdSnap.docs);
+        
+        // Display feedback
+        displayFeedback(allFeedback);
+        
+        // Set up filter event listeners
+        setupFilters(allFeedback);
+        
+      } catch (error) {
+        console.error("Error loading feedback data:", error);
+        showEmptyState("Error loading feedback. Please try again later.");
+      }
+    }
+
+    function updateStats(feedbackArray, eventMap) {
+      // Total feedback count
+      totalFeedbackCount.textContent = feedbackArray.length;
+      
+      // Count unique events with feedback
+      const eventsWithFeedback = new Set(feedbackArray.map(fb => fb.eventId));
+      eventCount.textContent = eventsWithFeedback.size;
+      
+      // Calculate average rating (convert to numeric values)
+      if (feedbackArray.length > 0) {
+        const ratingValues = {
+          "Excellent": 4,
+          "Good": 3,
+          "Acceptable": 2,
+          "Poor": 1
+        };
+        
+        const totalRating = feedbackArray.reduce((sum, fb) => {
+          return sum + (ratingValues[fb.rating] || 0);
+        }, 0);
+        
+        const avgRating = totalRating / feedbackArray.length;
+        averageRating.textContent = avgRating.toFixed(1);
+      } else {
+        averageRating.textContent = "0";
+      }
+    }
+
+    function populateEventFilter(createdDocs) {
+      eventFilter.innerHTML = '<option value="all">All Events</option>';
+      
+      createdDocs.forEach((docSnap) => {
+        const event = docSnap.data();
+        const option = document.createElement('option');
+        option.value = docSnap.id;
+        option.textContent = event.title;
+        eventFilter.appendChild(option);
+      });
+    }
+
+    function displayFeedback(feedbackArray) {
+      feedbackContainer.innerHTML = "";
+      feedbackCount.textContent = `${feedbackArray.length} feedback${feedbackArray.length !== 1 ? 's' : ''}`;
+      
+      if (feedbackArray.length === 0) {
+        showEmptyState("No feedback found for your events.");
+        return;
+      }
+      
+      // Sort feedback by date (newest first)
+      feedbackArray.sort((a, b) => {
+        const dateA = a.submittedAt?.toDate ? a.submittedAt.toDate() : new Date();
+        const dateB = b.submittedAt?.toDate ? b.submittedAt.toDate() : new Date();
+        return dateB - dateA;
+      });
+      
+      feedbackArray.forEach(fb => {
+        const feedbackDate = fb.submittedAt?.toDate ? 
+          fb.submittedAt.toDate().toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'short', 
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          }) : "Unknown date";
+        
+        // Determine rating class
+        let ratingClass = "rating-excellent";
+        if (fb.rating === "Good") ratingClass = "rating-good";
+        else if (fb.rating === "Acceptable") ratingClass = "rating-acceptable";
+        else if (fb.rating === "Poor") ratingClass = "rating-poor";
+        
+        const card = `
+          <div class="feedback-item" data-event-id="${fb.eventId}" data-rating="${fb.rating}">
+            <div class="card-body">
+              <div class="feedback-event">
+                <i class="fas fa-calendar-alt me-2"></i>${fb.eventTitle}
+              </div>
+              <div class="feedback-rating ${ratingClass}">
+                <i class="fas fa-star me-1"></i>${fb.rating}
+              </div>
+              <div class="feedback-content">
+                ${fb.comments || "No detailed comments provided."}
+              </div>
+              <div class="feedback-meta">
+                <small><i class="far fa-clock me-1"></i>Submitted on ${feedbackDate}</small>
+                <small>Event ID: ${fb.eventId}</small>
               </div>
             </div>
-          </div>`;
+          </div>
+        `;
+        feedbackContainer.innerHTML += card;
+      });
+    }
+
+    function setupFilters(allFeedback) {
+      eventFilter.addEventListener('change', () => {
+        applyFilters(allFeedback);
+      });
+      
+      ratingFilter.addEventListener('change', () => {
+        applyFilters(allFeedback);
+      });
+    }
+
+    function applyFilters(allFeedback) {
+      const selectedEvent = eventFilter.value;
+      const selectedRating = ratingFilter.value;
+      
+      let filteredFeedback = [...allFeedback];
+      
+      // Filter by event
+      if (selectedEvent !== "all") {
+        filteredFeedback = filteredFeedback.filter(fb => fb.eventId === selectedEvent);
       }
+      
+      // Filter by rating
+      if (selectedRating !== "all") {
+        filteredFeedback = filteredFeedback.filter(fb => fb.rating === selectedRating);
+      }
+      
+      displayFeedback(filteredFeedback);
+    }
+
+    function showEmptyState(message) {
+      feedbackContainer.innerHTML = `
+        <div class="empty-state">
+          <i class="far fa-comments"></i>
+          <h4>No Feedback Available</h4>
+          <p>${message}</p>
+          <a href="post.html" class="btn btn-view">Create Your First Event</a>
+        </div>
+      `;
+      feedbackCount.textContent = "0 feedbacks";
     }
   </script>
 </body>
